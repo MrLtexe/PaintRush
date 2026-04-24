@@ -280,7 +280,7 @@ public class MainMenuUI : MonoBehaviour
 
     // ── Lobi Listesi UI ───────────────────────────────────────────────────
 
-    private void OnLobbyPlayersChanged(NetworkListEvent<PlayerLobbyData> _)
+    private void OnLobbyPlayersChanged(NetworkListEvent<LobbyPlayerState> changeEvent)
     {
         UpdatePlayerListUI();
     }
@@ -293,7 +293,7 @@ public class MainMenuUI : MonoBehaviour
         foreach (var player in NetworkLobbyManager.Instance.LobbyPlayers)
         {
             string teamName = player.TeamId == 1 ? "<color=#FF5555>A Takımı</color>" : (player.TeamId == 2 ? "<color=#5555FF>B Takımı</color>" : "<color=#AAAAAA>Seçim Yapmadı</color>");
-            list += $"Oyuncu {player.ClientId} - {teamName}\n";
+            list += $"{player.PlayerName} - {teamName}\n";
         }
         playerListText.text = list;
     }
