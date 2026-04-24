@@ -29,7 +29,8 @@ public class MainMenuUI : MonoBehaviour
 
     private void Awake()
     {
-        _bootstrap = FindFirstObjectByType<NetworkBootstrap>();
+        // Artık Singleton olduğu için doğrudan Instance üzerinden alabiliriz (veya Find kullanmaya devam edebiliriz).
+        _bootstrap = NetworkBootstrap.Instance ?? FindFirstObjectByType<NetworkBootstrap>();
     }
 
     private void Start()
@@ -64,6 +65,14 @@ public class MainMenuUI : MonoBehaviour
         try
         {
             string code = await _bootstrap.StartHostAsync();
+            
+            if (string.IsNullOrEmpty(code))
+            {
+                SetStatus("Host başlatılamadı. Lütfen tekrar deneyin.");
+                SetButtons(true);
+                return;
+            }
+
             ShowLobby();
             SetStatus($"Kod: {code}");
             UpdatePlayerCount();
@@ -115,11 +124,16 @@ public class MainMenuUI : MonoBehaviour
     private void OnStartGameClicked()
     {
         if (!NetworkManager.Singleton.IsHost) return;
-        int nextIndex = UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex + 1;
-        string sceneName = System.IO.Path.GetFileNameWithoutExtension(
-            UnityEngine.SceneManagement.SceneUtility.GetScenePathByBuildIndex(nextIndex));
+        
         if (NetworkManager.Singleton.SceneManager != null)
-            NetworkManager.Singleton.SceneManager.LoadScene(sceneName, LoadSceneMode.Single);
+        {
+            // Karmaşık index hesaplaması yerine yukarıda tanımlanan Inspector değişkenini kullanıyoruz.
+            NetworkManager.Singleton.SceneManager.LoadScene(gameSceneName, LoadSceneMode.Single);
+        }
+        else
+        {
+            Debug.LogError("[Menu] NetworkManager üzerinde 'Enable Scene Management' aktif değil!");
+        }
     }
 
     private void OnDisconnectClicked()
@@ -167,8 +181,17 @@ public class MainMenuUI : MonoBehaviour
     private void UpdatePlayerCount()
     {
         if (!playerCountText) return;
-        int count = NetworkManager.Singleton.ConnectedClients.Count;
-        playerCountText.text = $"Oyuncular: {count} / 4";
+        
+        // ConnectedClients listesi sadece Server/Host tarafında doludur. İstemciler (Clients) tüm listeye erişemez.
+        if (NetworkManager.Singleton.IsServer)
+        {
+            int count = NetworkManager.Singleton.ConnectedClients.Count;
+            playerCountText.text = $"Oyuncular: {count} / {NetworkBootstrap.MaxConnections}";
+        }
+        else
+        {
+            playerCountText.text = "Oyuncular: (Sadece Host Görebilir)";
+        }
     }
 
     private void ShowMenu()
