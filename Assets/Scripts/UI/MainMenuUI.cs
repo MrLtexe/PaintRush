@@ -1,5 +1,6 @@
 using System.Collections;
 using Unity.Netcode;
+using Unity.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -100,6 +101,13 @@ public class MainMenuUI : MonoBehaviour
         try
         {
             await _bootstrap.StartClientAsync(code);
+            
+            // Bağlantı başladığında (CustomMessagingManager aktifleştiğinde) mesajları dinlemeye başla
+            if (NetworkManager.Singleton.CustomMessagingManager != null)
+            {
+                NetworkManager.Singleton.CustomMessagingManager.RegisterNamedMessageHandler("PlayerCountUpdate", ReceivePlayerCountUpdate);
+            }
+
             StartCoroutine(ConnectionTimeout(8f));
         }
         catch (System.Exception e)
@@ -138,6 +146,11 @@ public class MainMenuUI : MonoBehaviour
 
     private void OnDisconnectClicked()
     {
+        // Eğer Client isek dinlemeyi bırak
+        if (!NetworkManager.Singleton.IsHost && NetworkManager.Singleton.CustomMessagingManager != null)
+        {
+            NetworkManager.Singleton.CustomMessagingManager.UnregisterNamedMessageHandler("PlayerCountUpdate");
+        }
         _bootstrap.Disconnect();
         StartCoroutine(WaitForShutdownThenMenu(""));
     }
@@ -146,7 +159,11 @@ public class MainMenuUI : MonoBehaviour
 
     private void OnClientConnected(ulong clientId)
     {
-        UpdatePlayerCount();
+        // Eğer Host isek, yeni gelen kişiyi say ve herkese yeni sayıyı bildir
+        if (NetworkManager.Singleton.IsServer)
+        {
+            UpdatePlayerCount();
+        }
 
         if (!NetworkManager.Singleton.IsHost && clientId == NetworkManager.Singleton.LocalClientId)
         {
@@ -158,10 +175,19 @@ public class MainMenuUI : MonoBehaviour
 
     private void OnClientDisconnected(ulong clientId)
     {
-        UpdatePlayerCount();
+        // Biri koptuğunda (Host isek) güncel sayıyı herkese yeniden gönder
+        if (NetworkManager.Singleton.IsServer)
+        {
+            UpdatePlayerCount();
+        }
 
+        // Biz (Client) koptuysak
         if (!NetworkManager.Singleton.IsHost && clientId == NetworkManager.Singleton.LocalClientId)
         {
+            if (NetworkManager.Singleton.CustomMessagingManager != null)
+            {
+                NetworkManager.Singleton.CustomMessagingManager.UnregisterNamedMessageHandler("PlayerCountUpdate");
+            }
             _bootstrap.Disconnect();
             StartCoroutine(WaitForShutdownThenMenu("Sunucu bağlantısı kesildi."));
         }
@@ -182,15 +208,32 @@ public class MainMenuUI : MonoBehaviour
     {
         if (!playerCountText) return;
         
-        // ConnectedClients listesi sadece Server/Host tarafında doludur. İstemciler (Clients) tüm listeye erişemez.
         if (NetworkManager.Singleton.IsServer)
         {
             int count = NetworkManager.Singleton.ConnectedClients.Count;
-            playerCountText.text = $"Oyuncular: {count} / {NetworkBootstrap.MaxConnections}";
+            SetPlayerCountUI(count);
+
+            // İstemcilere (Client) güncel sayıyı bildir
+            if (NetworkManager.Singleton.CustomMessagingManager != null)
+            {
+                using var writer = new FastBufferWriter(4, Allocator.Temp);
+                writer.WriteValueSafe(count);
+                NetworkManager.Singleton.CustomMessagingManager.SendNamedMessageToAll("PlayerCountUpdate", writer);
+            }
         }
-        else
+    }
+
+    private void ReceivePlayerCountUpdate(ulong senderClientId, FastBufferReader messagePayload)
+    {
+        messagePayload.ReadValueSafe(out int count);
+        SetPlayerCountUI(count);
+    }
+
+    private void SetPlayerCountUI(int count)
+    {
+        if (playerCountText)
         {
-            playerCountText.text = "Oyuncular: (Sadece Host Görebilir)";
+            playerCountText.text = $"Oyuncular: {count} / {NetworkBootstrap.MaxConnections}";
         }
     }
 
