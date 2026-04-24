@@ -2659,7 +2659,7 @@ MonoBehaviour:
   statusText: {fileID: 930085658}
   disconnectButton: {fileID: 1030948689}
   startGameButton: {fileID: 1799220504}
-  gameSceneName: GameScene
+  gameSceneName: HelloWorld
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
