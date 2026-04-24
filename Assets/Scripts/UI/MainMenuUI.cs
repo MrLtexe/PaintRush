@@ -150,9 +150,9 @@ public class MainMenuUI : MonoBehaviour
     {
         if (!NetworkManager.Singleton.IsHost) return;
         
-        if (NetworkLobbyManager.Instance != null && !NetworkLobbyManager.Instance.CanStartGame())
+        if (NetworkLobbyManager.Instance != null && !NetworkLobbyManager.Instance.CanStartGame(out string errorMessage))
         {
-            SetStatus("Tüm oyuncular takım seçmeli!");
+            SetStatus(errorMessage);
             return;
         }
         

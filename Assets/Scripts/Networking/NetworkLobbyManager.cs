@@ -109,18 +109,31 @@ public class NetworkLobbyManager : NetworkBehaviour
         }
     }
 
-    // 5. Başlatma Kontrolü (Herkes takım seçti mi?)
-    public bool CanStartGame()
+    // 5. Başlatma Kontrolü (Herkes takım seçti mi ve takımlar eşit mi?)
+    public bool CanStartGame(out string errorMessage)
     {
+        errorMessage = "";
         if (LobbyPlayers.Count == 0) return false;
+
+        int teamA_Count = 0;
+        int teamB_Count = 0;
 
         foreach (var player in LobbyPlayers)
         {
             if (player.TeamId == 0)
             {
-                Debug.Log("Tüm oyuncular takım seçimi yapmalı!");
+                errorMessage = "Tüm oyuncular takım seçimi yapmalı!";
                 return false;
             }
+            
+            if (player.TeamId == 1) teamA_Count++;
+            else if (player.TeamId == 2) teamB_Count++;
+        }
+
+        if (teamA_Count != teamB_Count)
+        {
+            errorMessage = "Takımlar eşit sayıda olmalı!";
+            return false;
         }
         return true;
     }
