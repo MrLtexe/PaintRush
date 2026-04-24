@@ -20,6 +20,7 @@ public class MainMenuUI : MonoBehaviour
     [SerializeField] private TMP_Text playerCountText;
     [SerializeField] private TMP_Text statusText;
     [SerializeField] private Button disconnectButton;
+    [SerializeField] private Button startGameButton;
 
     [Header("Oyun sahnesi")]
     [SerializeField] private string gameSceneName = "GameScene";
@@ -36,6 +37,7 @@ public class MainMenuUI : MonoBehaviour
         hostButton.onClick.AddListener(OnHostClicked);
         joinButton.onClick.AddListener(OnJoinClicked);
         disconnectButton.onClick.AddListener(OnDisconnectClicked);
+        startGameButton.onClick.AddListener(OnStartGameClicked);
         ShowMenu();
     }
 
@@ -65,9 +67,7 @@ public class MainMenuUI : MonoBehaviour
             ShowLobby();
             SetStatus($"Kod: {code}");
             UpdatePlayerCount();
-
-            if (NetworkManager.Singleton.SceneManager != null)
-                NetworkManager.Singleton.SceneManager.LoadScene(gameSceneName, LoadSceneMode.Single);
+            startGameButton.gameObject.SetActive(true);
         }
         catch (System.Exception e)
         {
@@ -112,6 +112,13 @@ public class MainMenuUI : MonoBehaviour
         }
     }
 
+    private void OnStartGameClicked()
+    {
+        if (!NetworkManager.Singleton.IsHost) return;
+        if (NetworkManager.Singleton.SceneManager != null)
+            NetworkManager.Singleton.SceneManager.LoadScene(gameSceneName, LoadSceneMode.Single);
+    }
+
     private void OnDisconnectClicked()
     {
         _bootstrap.Disconnect();
@@ -127,7 +134,8 @@ public class MainMenuUI : MonoBehaviour
         if (!NetworkManager.Singleton.IsHost && clientId == NetworkManager.Singleton.LocalClientId)
         {
             ShowLobby();
-            SetStatus("Bağlantı başarılı!");
+            startGameButton.gameObject.SetActive(false);
+            SetStatus("Host oyunu başlatana kadar bekle...");
         }
     }
 
