@@ -22,6 +22,9 @@ public class MainMenuUI : MonoBehaviour
     [SerializeField] private TMP_Text statusText;
     [SerializeField] private Button disconnectButton;
     [SerializeField] private Button startGameButton;
+    [SerializeField] private Button teamAButton;
+    [SerializeField] private Button teamBButton;
+    [SerializeField] private TMP_Text playerListText;
 
     [Header("Oyun sahnesi")]
     [SerializeField] private string gameSceneName = "HelloWorld";
@@ -40,6 +43,10 @@ public class MainMenuUI : MonoBehaviour
         joinButton.onClick.AddListener(OnJoinClicked);
         disconnectButton.onClick.AddListener(OnDisconnectClicked);
         startGameButton.onClick.AddListener(OnStartGameClicked);
+        
+        if (teamAButton) teamAButton.onClick.AddListener(() => OnTeamClicked(1));
+        if (teamBButton) teamBButton.onClick.AddListener(() => OnTeamClicked(2));
+        
         ShowMenu();
     }
 
@@ -129,9 +136,25 @@ public class MainMenuUI : MonoBehaviour
         }
     }
 
+    private void OnTeamClicked(int teamId)
+    {
+        if (NetworkLobbyManager.Instance != null)
+        {
+            NetworkLobbyManager.Instance.SelectTeamRpc(teamId);
+            string teamName = teamId == 1 ? "A Takımı" : "B Takımı";
+            SetStatus($"{teamName} seçildi.");
+        }
+    }
+
     private void OnStartGameClicked()
     {
         if (!NetworkManager.Singleton.IsHost) return;
+        
+        if (NetworkLobbyManager.Instance != null && !NetworkLobbyManager.Instance.CanStartGame())
+        {
+            SetStatus("Tüm oyuncular takım seçmeli!");
+            return;
+        }
         
         if (NetworkManager.Singleton.SceneManager != null)
         {
@@ -165,11 +188,21 @@ public class MainMenuUI : MonoBehaviour
             UpdatePlayerCount();
         }
 
-        if (!NetworkManager.Singleton.IsHost && clientId == NetworkManager.Singleton.LocalClientId)
+        // Biz (kendi bilgisayarımız) bağlandığında
+        if (clientId == NetworkManager.Singleton.LocalClientId)
         {
-            ShowLobby();
-            startGameButton.gameObject.SetActive(false);
-            SetStatus("Host oyunu başlatana kadar bekle...");
+            if (NetworkLobbyManager.Instance != null)
+            {
+                NetworkLobbyManager.Instance.LobbyPlayers.OnListChanged += OnLobbyPlayersChanged;
+                UpdatePlayerListUI(); // Bağlanır bağlanmaz listeyi bir kez çiz
+            }
+
+            if (!NetworkManager.Singleton.IsHost)
+            {
+                ShowLobby();
+                startGameButton.gameObject.SetActive(false);
+                SetStatus("Host oyunu başlatana kadar bekle...");
+            }
         }
     }
 
@@ -181,15 +214,23 @@ public class MainMenuUI : MonoBehaviour
             UpdatePlayerCount();
         }
 
-        // Biz (Client) koptuysak
-        if (!NetworkManager.Singleton.IsHost && clientId == NetworkManager.Singleton.LocalClientId)
+        // Biz koptuysak (Hem Host hem Client için geçerli)
+        if (clientId == NetworkManager.Singleton.LocalClientId)
         {
-            if (NetworkManager.Singleton.CustomMessagingManager != null)
+            if (NetworkLobbyManager.Instance != null)
             {
-                NetworkManager.Singleton.CustomMessagingManager.UnregisterNamedMessageHandler("PlayerCountUpdate");
+                NetworkLobbyManager.Instance.LobbyPlayers.OnListChanged -= OnLobbyPlayersChanged;
             }
-            _bootstrap.Disconnect();
-            StartCoroutine(WaitForShutdownThenMenu("Sunucu bağlantısı kesildi."));
+
+            if (!NetworkManager.Singleton.IsHost)
+            {
+                if (NetworkManager.Singleton.CustomMessagingManager != null)
+                {
+                    NetworkManager.Singleton.CustomMessagingManager.UnregisterNamedMessageHandler("PlayerCountUpdate");
+                }
+                _bootstrap.Disconnect();
+                StartCoroutine(WaitForShutdownThenMenu("Sunucu bağlantısı kesildi."));
+            }
         }
     }
 
@@ -237,10 +278,31 @@ public class MainMenuUI : MonoBehaviour
         }
     }
 
+    // ── Lobi Listesi UI ───────────────────────────────────────────────────
+
+    private void OnLobbyPlayersChanged(NetworkListEvent<LobbyPlayerState> changeEvent)
+    {
+        UpdatePlayerListUI();
+    }
+
+    private void UpdatePlayerListUI()
+    {
+        if (playerListText == null || NetworkLobbyManager.Instance == null) return;
+
+        string list = "Oyuncu Listesi:\n\n";
+        foreach (var player in NetworkLobbyManager.Instance.LobbyPlayers)
+        {
+            string teamName = player.TeamId == 1 ? "<color=#FF5555>A Takımı</color>" : (player.TeamId == 2 ? "<color=#5555FF>B Takımı</color>" : "<color=#AAAAAA>Seçim Yapmadı</color>");
+            list += $"{player.PlayerName} - {teamName}\n";
+        }
+        playerListText.text = list;
+    }
+
     private void ShowMenu()
     {
         menuPanel.SetActive(true);
         lobbyPanel.SetActive(false);
+        if (playerListText) playerListText.text = "";
     }
 
     private void ShowLobby()
