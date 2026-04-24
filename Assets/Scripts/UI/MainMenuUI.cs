@@ -23,6 +23,7 @@ public class MainMenuUI : MonoBehaviour
     [Header("Durum")]
     [SerializeField] private TMP_Text statusText;
     [SerializeField] private TMP_Text localIPText;
+    [SerializeField] private TMP_Text playerCountText;
 
     [Header("Oyun sahnesi")]
     [SerializeField] private string gameSceneName = "GameScene";
@@ -67,6 +68,7 @@ public class MainMenuUI : MonoBehaviour
         _bootstrap.StartHost();
         ShowLobby();
         SetStatus($"Sunucu aktif!  IP: {GetLocalIP()}  Port: {NetworkBootstrap.Port}");
+        UpdatePlayerCount();
 
         // Host oyun sahnesini yükler; diğer istemciler otomatik senkronize olur
         NetworkManager.Singleton.SceneManager.LoadScene(gameSceneName, LoadSceneMode.Single);
@@ -94,7 +96,8 @@ public class MainMenuUI : MonoBehaviour
 
     private void OnClientConnected(ulong clientId)
     {
-        // Sadece istemci kendi bağlantısını yakalar
+        UpdatePlayerCount();
+
         if (!NetworkManager.Singleton.IsHost && clientId == NetworkManager.Singleton.LocalClientId)
         {
             ShowLobby();
@@ -104,6 +107,8 @@ public class MainMenuUI : MonoBehaviour
 
     private void OnClientDisconnected(ulong clientId)
     {
+        UpdatePlayerCount();
+
         if (!NetworkManager.Singleton.IsHost && clientId == NetworkManager.Singleton.LocalClientId)
         {
             ShowMenu();
@@ -111,6 +116,13 @@ public class MainMenuUI : MonoBehaviour
             joinButton.interactable = true;
             hostButton.interactable = true;
         }
+    }
+
+    private void UpdatePlayerCount()
+    {
+        if (playerCountText == null) return;
+        int count = NetworkManager.Singleton.ConnectedClients.Count;
+        playerCountText.text = $"Oyuncular: {count} / 4";
     }
 
     // ── Yardımcı ──────────────────────────────────────────────────────────
