@@ -23,7 +23,7 @@ public class MainMenuUI : MonoBehaviour
     [SerializeField] private Button startGameButton;
 
     [Header("Oyun sahnesi")]
-    [SerializeField] private string gameSceneName = "GameScene";
+    [SerializeField] private string gameSceneName = "HelloWorld";
 
     private NetworkBootstrap _bootstrap;
 
@@ -115,8 +115,11 @@ public class MainMenuUI : MonoBehaviour
     private void OnStartGameClicked()
     {
         if (!NetworkManager.Singleton.IsHost) return;
+        int nextIndex = UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex + 1;
+        string sceneName = System.IO.Path.GetFileNameWithoutExtension(
+            UnityEngine.SceneManagement.SceneUtility.GetScenePathByBuildIndex(nextIndex));
         if (NetworkManager.Singleton.SceneManager != null)
-            NetworkManager.Singleton.SceneManager.LoadScene(gameSceneName, LoadSceneMode.Single);
+            NetworkManager.Singleton.SceneManager.LoadScene(sceneName, LoadSceneMode.Single);
     }
 
     private void OnDisconnectClicked()
