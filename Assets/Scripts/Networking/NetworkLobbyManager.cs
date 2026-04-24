@@ -1,140 +1,86 @@
-using System;
-using Unity.Collections;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
-
-// 1. Oyuncu Verisi (Ağ üzerinden taşınacak paket)
-public struct LobbyPlayerState : INetworkSerializable, IEquatable<LobbyPlayerState>
-{
-    public ulong ClientId;
-    public FixedString32Bytes PlayerName; // Ağ dostu string tipi
-    public int TeamId; // 0: Tarafsız, 1: A Takımı, 2: B Takımı
-
-    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
-    {
-        serializer.SerializeValue(ref ClientId);
-        serializer.SerializeValue(ref PlayerName);
-        serializer.SerializeValue(ref TeamId);
-    }
-
-    public bool Equals(LobbyPlayerState other)
-    {
-        return ClientId == other.ClientId && 
-               PlayerName == other.PlayerName && 
-               TeamId == other.TeamId;
-    }
-}
 
 public class NetworkLobbyManager : NetworkBehaviour
 {
     public static NetworkLobbyManager Instance { get; private set; }
 
-    // 2. Senkronize Liste (İçinde bir değişiklik olduğunda otomatik olarak tüm Client'lara yansır)
-    public NetworkList<LobbyPlayerState> LobbyPlayers;
+    // Server-side takım tablosu: clientId → teamId (1=A, 2=B)
+    private readonly Dictionary<ulong, int> _playerTeams = new();
+
+    // Client UI için NetworkList
+    public NetworkList<PlayerLobbyData> LobbyPlayers { get; private set; }
 
     private void Awake()
     {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
-
-        // Awake içinde listeyi mutlaka oluşturmalıyız
-        LobbyPlayers = new NetworkList<LobbyPlayerState>();
+        LobbyPlayers = new NetworkList<PlayerLobbyData>();
+        DontDestroyOnLoad(gameObject);
     }
 
     public override void OnNetworkSpawn()
     {
-        if (IsServer)
-        {
-            // Yeni oyuncular katıldıkça veya koptukça listeyi güncellemek için dinleyiciler
-            NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
-            NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
-        }
+        if (!IsServer) return;
+        NetworkManager.Singleton.OnClientConnectedCallback += ServerOnClientConnected;
+        NetworkManager.Singleton.OnClientDisconnectCallback += ServerOnClientDisconnected;
     }
 
     public override void OnNetworkDespawn()
     {
-        if (IsServer && NetworkManager.Singleton != null)
-        {
-            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
-            NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
-        }
+        if (!IsServer) return;
+        NetworkManager.Singleton.OnClientConnectedCallback -= ServerOnClientConnected;
+        NetworkManager.Singleton.OnClientDisconnectCallback -= ServerOnClientDisconnected;
     }
 
-    private void OnClientConnected(ulong clientId) => AddPlayerToList(clientId);
-
-    private void OnClientDisconnected(ulong clientId)
+    private void ServerOnClientConnected(ulong clientId)
     {
+        _playerTeams[clientId] = 0;
+        LobbyPlayers.Add(new PlayerLobbyData { ClientId = clientId, TeamId = 0 });
+    }
+
+    private void ServerOnClientDisconnected(ulong clientId)
+    {
+        _playerTeams.Remove(clientId);
         for (int i = 0; i < LobbyPlayers.Count; i++)
         {
-            if (LobbyPlayers[i].ClientId == clientId)
-            {
-                LobbyPlayers.RemoveAt(i);
-                break;
-            }
+            if (LobbyPlayers[i].ClientId != clientId) continue;
+            LobbyPlayers.RemoveAt(i);
+            break;
         }
     }
 
-    private void AddPlayerToList(ulong clientId)
-    {
-        // 3. Sıraya göre isimlendirme (Player 1, Player 2 vb.)
-        int playerIndex = LobbyPlayers.Count + 1;
-            
-        LobbyPlayers.Add(new LobbyPlayerState
-        {
-            ClientId = clientId,
-            PlayerName = $"Player {playerIndex}",
-            TeamId = 0 // Başlangıçta tarafsız
-        });
-    }
+    // MainMenuUI'dan çağrılır
+    public void SelectTeamRpc(int teamId) => SelectTeamServerRpc(teamId);
 
-    // 4. Takım Seçimi (Client'lar Host'a takım seçtiklerini bu metodla bildirir)
-    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    public void SelectTeamRpc(int teamId, RpcParams rpcParams = default)
+    [ServerRpc(RequireOwnership = false)]
+    private void SelectTeamServerRpc(int teamId, ServerRpcParams rpc = default)
     {
-        ulong senderClientId = rpcParams.Receive.SenderClientId;
+        ulong clientId = rpc.Receive.SenderClientId;
+        _playerTeams[clientId] = teamId;
 
         for (int i = 0; i < LobbyPlayers.Count; i++)
         {
-            if (LobbyPlayers[i].ClientId == senderClientId)
-            {
-                var updatedPlayer = LobbyPlayers[i];
-                updatedPlayer.TeamId = teamId;
-                LobbyPlayers[i] = updatedPlayer; // Struct'ı güncelle
-                break;
-            }
+            if (LobbyPlayers[i].ClientId != clientId) continue;
+            LobbyPlayers[i] = new PlayerLobbyData { ClientId = clientId, TeamId = teamId };
+            break;
         }
     }
 
-    // 5. Başlatma Kontrolü (Herkes takım seçti mi ve takımlar eşit mi?)
+    public int GetPlayerTeam(ulong clientId) =>
+        _playerTeams.TryGetValue(clientId, out int team) ? team : 1;
+
     public bool CanStartGame(out string errorMessage)
     {
+        int a = 0, b = 0;
+        foreach (var kv in _playerTeams)
+        {
+            if (kv.Value == 1) a++;
+            else if (kv.Value == 2) b++;
+        }
+        if (a == 0 || b == 0) { errorMessage = "Her takımda en az 1 oyuncu olmalı!"; return false; }
         errorMessage = "";
-        if (LobbyPlayers.Count == 0) return false;
-
-        int teamA_Count = 0;
-        int teamB_Count = 0;
-
-        foreach (var player in LobbyPlayers)
-        {
-            if (player.TeamId == 0)
-            {
-                errorMessage = "Tüm oyuncular takım seçimi yapmalı!";
-                return false;
-            }
-            
-            if (player.TeamId == 1) teamA_Count++;
-            else if (player.TeamId == 2) teamB_Count++;
-        }
-
-        if (teamA_Count != teamB_Count)
-        {
-            errorMessage = "Takımlar eşit sayıda olmalı!";
-            return false;
-        }
         return true;
     }
 }
