@@ -66,7 +66,7 @@ public class MainMenuUI : MonoBehaviour
             SetStatus($"Kod: {code}");
             UpdatePlayerCount();
 
-            if (NetworkManager.Singleton.SceneManager)
+            if (NetworkManager.Singleton.SceneManager != null)
                 NetworkManager.Singleton.SceneManager.LoadScene(gameSceneName, LoadSceneMode.Single);
         }
         catch (System.Exception e)
