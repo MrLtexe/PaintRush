@@ -11,13 +11,12 @@ public class MainMenuUI : MonoBehaviour
     [SerializeField] private GameObject menuPanel;
     [SerializeField] private GameObject lobbyPanel;
 
-    [Header("Menu - Host/Join")]
+    [Header("Menu")]
     [SerializeField] private Button hostButton;
     [SerializeField] private TMP_InputField joinCodeInputField;
     [SerializeField] private Button joinButton;
 
     [Header("Lobby")]
-    [SerializeField] private TMP_Text joinCodeDisplayText;
     [SerializeField] private TMP_Text playerCountText;
     [SerializeField] private TMP_Text statusText;
     [SerializeField] private Button disconnectButton;
@@ -58,20 +57,17 @@ public class MainMenuUI : MonoBehaviour
     private async void OnHostClicked()
     {
         SetButtons(false);
-        SetStatus("Relay sunucusuna bağlanıyor...");
+        SetStatus("Bağlanıyor...");
 
         try
         {
             string code = await _bootstrap.StartHostAsync();
             ShowLobby();
-            if (joinCodeDisplayText) joinCodeDisplayText.text = $"Kod: {code}";
-            SetStatus($"Kod: {code}  —  Arkadaşına ver!");
+            SetStatus($"Kod: {code}");
             UpdatePlayerCount();
 
-            if (NetworkManager.Singleton.SceneManager != null)
+            if (NetworkManager.Singleton.SceneManager)
                 NetworkManager.Singleton.SceneManager.LoadScene(gameSceneName, LoadSceneMode.Single);
-            else
-                Debug.LogWarning("[Menu] SceneManager null — NetworkManager'da Enable Scene Management açık mı?");
         }
         catch (System.Exception e)
         {
@@ -110,6 +106,7 @@ public class MainMenuUI : MonoBehaviour
         if (!NetworkManager.Singleton.IsConnectedClient)
         {
             _bootstrap.Disconnect();
+            yield return new WaitUntil(() => !NetworkManager.Singleton.IsListening);
             SetStatus("Bağlantı başarısız. Kodu kontrol et.");
             SetButtons(true);
         }
@@ -118,8 +115,7 @@ public class MainMenuUI : MonoBehaviour
     private void OnDisconnectClicked()
     {
         _bootstrap.Disconnect();
-        ShowMenu();
-        SetStatus("");
+        StartCoroutine(WaitForShutdownThenMenu(""));
     }
 
     // ── Network olayları ──────────────────────────────────────────────────
@@ -131,7 +127,6 @@ public class MainMenuUI : MonoBehaviour
         if (!NetworkManager.Singleton.IsHost && clientId == NetworkManager.Singleton.LocalClientId)
         {
             ShowLobby();
-            joinCodeDisplayText.text = "";
             SetStatus("Bağlantı başarılı!");
         }
     }
@@ -142,17 +137,25 @@ public class MainMenuUI : MonoBehaviour
 
         if (!NetworkManager.Singleton.IsHost && clientId == NetworkManager.Singleton.LocalClientId)
         {
-            ShowMenu();
-            SetStatus("Sunucu bağlantısı kesildi.");
-            SetButtons(true);
+            _bootstrap.Disconnect();
+            StartCoroutine(WaitForShutdownThenMenu("Sunucu bağlantısı kesildi."));
         }
+    }
+
+    // Shutdown tamamlanmadan menüye dönme — re-host sorununu çözer
+    private IEnumerator WaitForShutdownThenMenu(string msg)
+    {
+        yield return new WaitUntil(() => !NetworkManager.Singleton.IsListening);
+        ShowMenu();
+        SetStatus(msg);
+        SetButtons(true);
     }
 
     // ── Yardımcı ─────────────────────────────────────────────────────────
 
     private void UpdatePlayerCount()
     {
-        if (playerCountText == null) return;
+        if (!playerCountText) return;
         int count = NetworkManager.Singleton.ConnectedClients.Count;
         playerCountText.text = $"Oyuncular: {count} / 4";
     }
