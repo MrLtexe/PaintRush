@@ -1,14 +1,16 @@
+using System.Threading.Tasks;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
+using Unity.Networking.Transport.Relay;
+using Unity.Services.Authentication;
+using Unity.Services.Core;
+using Unity.Services.Relay;
+using Unity.Services.Relay.Models;
 using UnityEngine;
 
-/// <summary>
-/// NetworkManager'a ekle. UnityTransport ayarlarını runtime'da yönetir.
-/// </summary>
 [RequireComponent(typeof(NetworkManager))]
 public class NetworkBootstrap : MonoBehaviour
 {
-    public const ushort Port = 7777;
     public const int MaxConnections = 4;
 
     private UnityTransport _transport;
@@ -22,33 +24,45 @@ public class NetworkBootstrap : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    public void StartHost()
+    public async Task InitServicesAsync()
     {
-        ConfigureTransport("0.0.0.0");
-        NetworkManager.Singleton.StartHost();
-        Debug.Log($"[Host] Başlatıldı. Port: {Port}");
+        if (UnityServices.State == ServicesInitializationState.Initialized) return;
+        await UnityServices.InitializeAsync();
+        if (!AuthenticationService.Instance.IsSignedIn)
+            await AuthenticationService.Instance.SignInAnonymouslyAsync();
+        Debug.Log("[Relay] Servisler hazır.");
     }
 
-    public void StartClient(string ip)
+    // Host: Relay allocation oluştur, join kodu döndür
+    public async Task<string> StartHostAsync()
     {
-        if (string.IsNullOrWhiteSpace(ip)) ip = "127.0.0.1";
-        ConfigureTransport(ip);
+        await InitServicesAsync();
+
+        Allocation allocation = await RelayService.Instance.CreateAllocationAsync(MaxConnections - 1);
+        string joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
+
+        _transport.SetRelayServerData(new RelayServerData(allocation, "dtls"));
+        NetworkManager.Singleton.StartHost();
+
+        Debug.Log($"[Relay] Host başlatıldı. Kod: {joinCode}");
+        return joinCode;
+    }
+
+    // Client: Join koduyla Relay üzerinden bağlan
+    public async Task StartClientAsync(string joinCode)
+    {
+        await InitServicesAsync();
+
+        JoinAllocation joinAllocation = await RelayService.Instance.JoinAllocationAsync(joinCode.Trim().ToUpper());
+        _transport.SetRelayServerData(new RelayServerData(joinAllocation, "dtls"));
         NetworkManager.Singleton.StartClient();
-        Debug.Log($"[Client] Bağlanıyor → {ip}:{Port}");
+
+        Debug.Log($"[Relay] Client bağlanıyor. Kod: {joinCode}");
     }
 
     public void Disconnect()
     {
-        if (NetworkManager.Singleton.IsHost)
-            NetworkManager.Singleton.Shutdown();
-        else if (NetworkManager.Singleton.IsClient)
-            NetworkManager.Singleton.Shutdown();
-
-        Debug.Log("[Network] Bağlantı kesildi.");
-    }
-
-    private void ConfigureTransport(string address)
-    {
-        _transport.SetConnectionData(address, Port);
+        NetworkManager.Singleton.Shutdown();
+        Debug.Log("[Relay] Bağlantı kesildi.");
     }
 }

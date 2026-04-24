@@ -5,26 +5,22 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
 
-/// <summary>
-/// Canvas > MainMenuPanel'a ekle.
-/// Gerekli referanslar Inspector'dan bağlanır.
-/// </summary>
 public class MainMenuUI : MonoBehaviour
 {
     [Header("Paneller")]
     [SerializeField] private GameObject menuPanel;
     [SerializeField] private GameObject lobbyPanel;
 
-    [Header("Host/Join")]
-    [SerializeField] private TMP_InputField ipInputField;
+    [Header("Menu - Host/Join")]
     [SerializeField] private Button hostButton;
+    [SerializeField] private TMP_InputField joinCodeInputField;
     [SerializeField] private Button joinButton;
-    [SerializeField] private Button disconnectButton;
 
-    [Header("Durum")]
-    [SerializeField] private TMP_Text statusText;
-    [SerializeField] private TMP_Text localIPText;
+    [Header("Lobby")]
+    [SerializeField] private TMP_Text joinCodeDisplayText;
     [SerializeField] private TMP_Text playerCountText;
+    [SerializeField] private TMP_Text statusText;
+    [SerializeField] private Button disconnectButton;
 
     [Header("Oyun sahnesi")]
     [SerializeField] private string gameSceneName = "GameScene";
@@ -41,11 +37,7 @@ public class MainMenuUI : MonoBehaviour
         hostButton.onClick.AddListener(OnHostClicked);
         joinButton.onClick.AddListener(OnJoinClicked);
         disconnectButton.onClick.AddListener(OnDisconnectClicked);
-
         ShowMenu();
-
-        // Yerel IP'yi göster (host paylaşım kolaylığı için)
-        localIPText.text = $"Yerel IP: {GetLocalIP()}";
     }
 
     private void OnEnable()
@@ -61,30 +53,55 @@ public class MainMenuUI : MonoBehaviour
         NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
     }
 
-    // ── Buton işlemleri ────────────────────────────────────────────────────
+    // ── Buton işlemleri ───────────────────────────────────────────────────
 
-    private void OnHostClicked()
+    private async void OnHostClicked()
     {
-        SetStatus("Sunucu başlatılıyor...");
-        _bootstrap.StartHost();
-        ShowLobby();
-        SetStatus($"Sunucu aktif!  IP: {GetLocalIP()}  Port: {NetworkBootstrap.Port}");
-        UpdatePlayerCount();
+        SetButtons(false);
+        SetStatus("Relay sunucusuna bağlanıyor...");
 
-        // Host oyun sahnesini yükler; diğer istemciler otomatik senkronize olur
-        NetworkManager.Singleton.SceneManager.LoadScene(gameSceneName, LoadSceneMode.Single);
+        try
+        {
+            string code = await _bootstrap.StartHostAsync();
+            ShowLobby();
+            if (joinCodeDisplayText) joinCodeDisplayText.text = $"Kod: {code}";
+            SetStatus($"Kod: {code}  —  Arkadaşına ver!");
+            UpdatePlayerCount();
+
+            if (NetworkManager.Singleton.SceneManager != null)
+                NetworkManager.Singleton.SceneManager.LoadScene(gameSceneName, LoadSceneMode.Single);
+            else
+                Debug.LogWarning("[Menu] SceneManager null — NetworkManager'da Enable Scene Management açık mı?");
+        }
+        catch (System.Exception e)
+        {
+            SetStatus($"Hata: {e.Message}");
+            SetButtons(true);
+        }
     }
 
-    private void OnJoinClicked()
+    private async void OnJoinClicked()
     {
-        string ip = ipInputField.text.Trim();
-        if (string.IsNullOrEmpty(ip)) ip = "127.0.0.1";
+        string code = joinCodeInputField.text.Trim().ToUpper();
+        if (string.IsNullOrEmpty(code))
+        {
+            SetStatus("Join kodu gir!");
+            return;
+        }
 
-        SetStatus($"Bağlanıyor → {ip}:{NetworkBootstrap.Port}");
-        _bootstrap.StartClient(ip);
-        joinButton.interactable = false;
-        hostButton.interactable = false;
-        StartCoroutine(ConnectionTimeout(5f));
+        SetButtons(false);
+        SetStatus($"Bağlanıyor... ({code})");
+
+        try
+        {
+            await _bootstrap.StartClientAsync(code);
+            StartCoroutine(ConnectionTimeout(8f));
+        }
+        catch (System.Exception e)
+        {
+            SetStatus($"Hata: {e.Message}");
+            SetButtons(true);
+        }
     }
 
     private IEnumerator ConnectionTimeout(float seconds)
@@ -93,9 +110,8 @@ public class MainMenuUI : MonoBehaviour
         if (!NetworkManager.Singleton.IsConnectedClient)
         {
             _bootstrap.Disconnect();
-            SetStatus("Bağlantı başarısız. IP'yi kontrol et.");
-            joinButton.interactable = true;
-            hostButton.interactable = true;
+            SetStatus("Bağlantı başarısız. Kodu kontrol et.");
+            SetButtons(true);
         }
     }
 
@@ -103,10 +119,10 @@ public class MainMenuUI : MonoBehaviour
     {
         _bootstrap.Disconnect();
         ShowMenu();
-        SetStatus("Bağlantı kesildi.");
+        SetStatus("");
     }
 
-    // ── Network olayları ───────────────────────────────────────────────────
+    // ── Network olayları ──────────────────────────────────────────────────
 
     private void OnClientConnected(ulong clientId)
     {
@@ -115,6 +131,7 @@ public class MainMenuUI : MonoBehaviour
         if (!NetworkManager.Singleton.IsHost && clientId == NetworkManager.Singleton.LocalClientId)
         {
             ShowLobby();
+            joinCodeDisplayText.text = "";
             SetStatus("Bağlantı başarılı!");
         }
     }
@@ -127,10 +144,11 @@ public class MainMenuUI : MonoBehaviour
         {
             ShowMenu();
             SetStatus("Sunucu bağlantısı kesildi.");
-            joinButton.interactable = true;
-            hostButton.interactable = true;
+            SetButtons(true);
         }
     }
+
+    // ── Yardımcı ─────────────────────────────────────────────────────────
 
     private void UpdatePlayerCount()
     {
@@ -139,36 +157,27 @@ public class MainMenuUI : MonoBehaviour
         playerCountText.text = $"Oyuncular: {count} / 4";
     }
 
-    // ── Yardımcı ──────────────────────────────────────────────────────────
-
     private void ShowMenu()
     {
         menuPanel.SetActive(true);
         lobbyPanel.SetActive(false);
-        disconnectButton.gameObject.SetActive(false);
     }
 
     private void ShowLobby()
     {
         menuPanel.SetActive(false);
         lobbyPanel.SetActive(true);
-        disconnectButton.gameObject.SetActive(true);
     }
 
     private void SetStatus(string msg)
     {
-        if (statusText != null)
-            statusText.text = msg;
-        Debug.Log($"[Menu] {msg}");
+        if (statusText) statusText.text = msg;
+        if (!string.IsNullOrEmpty(msg)) Debug.Log($"[Menu] {msg}");
     }
 
-    private static string GetLocalIP()
+    private void SetButtons(bool interactable)
     {
-        foreach (var addr in System.Net.Dns.GetHostAddresses(System.Net.Dns.GetHostName()))
-        {
-            if (addr.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
-                return addr.ToString();
-        }
-        return "127.0.0.1";
+        hostButton.interactable = interactable;
+        joinButton.interactable = interactable;
     }
 }
