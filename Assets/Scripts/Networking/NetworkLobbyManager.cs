@@ -49,9 +49,6 @@ public class NetworkLobbyManager : NetworkBehaviour
     {
         if (IsServer)
         {
-            // Host'un kendisini listeye eklemesi
-            AddPlayerToList(NetworkManager.Singleton.LocalClientId);
-
             // Yeni oyuncular katıldıkça veya koptukça listeyi güncellemek için dinleyiciler
             NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
             NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
