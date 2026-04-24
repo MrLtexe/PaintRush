@@ -1,3 +1,4 @@
+using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -83,6 +84,19 @@ public class MainMenuUI : MonoBehaviour
         _bootstrap.StartClient(ip);
         joinButton.interactable = false;
         hostButton.interactable = false;
+        StartCoroutine(ConnectionTimeout(5f));
+    }
+
+    private IEnumerator ConnectionTimeout(float seconds)
+    {
+        yield return new WaitForSeconds(seconds);
+        if (!NetworkManager.Singleton.IsConnectedClient)
+        {
+            _bootstrap.Disconnect();
+            SetStatus("Bağlantı başarısız. IP'yi kontrol et.");
+            joinButton.interactable = true;
+            hostButton.interactable = true;
+        }
     }
 
     private void OnDisconnectClicked()
