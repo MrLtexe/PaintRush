@@ -132,7 +132,7 @@ GameObject:
   - component: {fileID: 18033794}
   - component: {fileID: 18033793}
   m_Layer: 5
-  m_Name: joinButton
+  m_Name: JoinButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -390,7 +390,7 @@ GameObject:
   - component: {fileID: 71075837}
   - component: {fileID: 71075836}
   m_Layer: 5
-  m_Name: hostButton
+  m_Name: HostButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1495,7 +1495,7 @@ GameObject:
   - component: {fileID: 955993330}
   - component: {fileID: 955993332}
   m_Layer: 5
-  m_Name: localIPTextArea
+  m_Name: CodeEnteringBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
