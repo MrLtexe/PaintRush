@@ -326,10 +326,10 @@ MonoBehaviour:
   attackInput: {fileID: 1120369429361536294, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   sprintInput: {fileID: -7471211009204490832, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   jumpInput: {fileID: -2099379676528639254, guid: 052faaac586de48259a63d0c4782560b, type: 3}
-  scrollWeaponInput: {fileID: 0}
-  grenadeInput: {fileID: 0}
-  smokeInput: {fileID: 0}
-  flashbangInput: {fileID: 0}
+  scrollWeaponInput: {fileID: -288231932112175806, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  grenadeInput: {fileID: 4022643411803173953, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  smokeInput: {fileID: -8599810864785264912, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  flashbangInput: {fileID: 1390591555600227939, guid: 052faaac586de48259a63d0c4782560b, type: 3}
 --- !u!114 &5335022833239430902
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -343,7 +343,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  NetworkTransformExpanded: 0
+  NetworkTransformExpanded: 1
   AutoOwnerAuthorityTickOffset: 1
   PositionInterpolationType: 0
   RotationInterpolationType: 0
