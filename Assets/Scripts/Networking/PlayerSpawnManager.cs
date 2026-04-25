@@ -66,6 +66,12 @@ public class PlayerSpawnManager : NetworkBehaviour
             var netObj = go.GetComponent<NetworkObject>();
             if (netObj == null) { Debug.LogError($"[Spawn] {prefab.name} prefab'ında NetworkObject yok!"); Destroy(go); continue; }
             netObj.SpawnAsPlayerObject(client.ClientId);
+
+            // ClientNetworkTransform kullanıldığında istemcinin (0,0,0) noktasında doğup aşağı düşmesini engellemek için
+            if (go.TryGetComponent(out PlayerHealth health))
+            {
+                health.Respawn(spawnPos, spawnRot);
+            }
         }
     }
 

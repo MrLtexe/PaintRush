@@ -82,6 +82,10 @@ public class FPSController : NetworkBehaviour
                 if (al != null) al.enabled = false;
             }
 
+            // DİĞER OYUNCULAR İÇİN CHARACTER CONTROLLER'I KAPAT (Çarpışma ve fiziksel itme hatalarını engeller)
+            var cc = GetComponent<CharacterController>();
+            if (cc != null) cc.enabled = false;
+
             // Yeni açı değerini sadece değiştiğinde dinle
             networkViewPitch.OnValueChanged += OnPitchChanged;
             return;
@@ -155,17 +159,36 @@ public class FPSController : NetworkBehaviour
 
         HandleLook(); // Etrafımıza bakabilmeliyiz
 
+        // Oyun durumunu kontrol et (Sadece Objective ve Defuse evrelerinde hareket/ateş serbest)
+        bool canAct = true;
+        if (GameManager.Instance != null)
+        {
+            GameState state = GameManager.Instance.CurrentState.Value;
+            if (state != GameState.ObjectivePhase && state != GameState.DefusePhase)
+            {
+                canAct = false; // Hazırlık, bekleme veya bitiş ekranındayız
+            }
+        }
+
         if (_isInteracting)
         {
             HandleInteracting(); // Sadece etkileşim sürecini işlet (hareket kilitli)
         }
-        else
+        else if (canAct)
         {
             HandleMovement();
             HandleJump();
             HandleWeapons();
             HandleUtilities();
             CheckInteractable(); // Şalter var mı diye kontrol et
+        }
+        else
+        {
+            // Hareket yasak olsa da yerçekimi çalışmaya devam etmeli (havada asılı kalmamak için)
+            _velocity.x = 0;
+            _velocity.z = 0;
+            _velocity.y += gravity * Time.deltaTime;
+            _controller.Move(Vector3.up * _velocity.y * Time.deltaTime);
         }
     }
 
