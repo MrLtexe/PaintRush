@@ -45,6 +45,10 @@ public class FPSController : NetworkBehaviour
     private bool _isGrounded;
     private float _xRotation = 0f;
 
+    [Header("Ağ Senkronizasyonu")]
+    public NetworkVariable<float> networkViewPitch = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    public NetworkVariable<int> networkWeaponIndex = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+
     [Header("Geri Tepme (Recoil) Ayarları")]
     public float recoilKickDuration = 0.05f; // Sarsıntının ne kadar hızlı vuracağı
     public float recoilReturnDuration = 0.25f; // Namlunun eski yerine ne kadar hızlı döneceği
@@ -61,16 +65,29 @@ public class FPSController : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-        // Eğer bu karakter bizim değilse kamerasını kapatıyoruz ki kendi kameramızla çakışmasın.
+        _health = GetComponent<PlayerHealth>();
+        
+        networkWeaponIndex.OnValueChanged += OnWeaponChanged;
+        ApplyWeaponVisuals(networkWeaponIndex.Value); // Herkes diğer oyuncuların güncel silahını görebilsin
+
         if (!IsOwner)
         {
+            // Objenin kendini kapatmak yerine sadece Görüntü ve Ses dinleyiciyi kapatıyoruz.
+            // Böylece objenin altındaki silah modelleri diğer oyuncularda görünmeye devam eder!
             if (playerCamera != null)
-                playerCamera.gameObject.SetActive(false);
+            {
+                var cam = playerCamera.GetComponent<Camera>();
+                if (cam != null) cam.enabled = false;
+                var al = playerCamera.GetComponent<AudioListener>();
+                if (al != null) al.enabled = false;
+            }
+
+            // Yeni açı değerini sadece değiştiğinde dinle
+            networkViewPitch.OnValueChanged += OnPitchChanged;
             return;
         }
 
         _controller = GetComponent<CharacterController>();
-        _health = GetComponent<PlayerHealth>();
         
         // Fareyi ekrana kilitle ve gizle
         Cursor.lockState = CursorLockMode.Locked;
@@ -83,9 +100,20 @@ public class FPSController : NetworkBehaviour
         {
             _health.currentHealth.OnValueChanged += OnHealthChanged;
         }
-        
-        // Oyun başladığında varsayılan silahı kuşan
-        SwitchWeapon(0);
+    }
+
+    private void OnPitchChanged(float previousValue, float newValue)
+    {
+        if (playerCamera != null)
+        {
+            playerCamera.DOKill(); // Çakışmaları önlemek için eski animasyonu durdur
+            playerCamera.DOLocalRotate(new Vector3(newValue, 0f, 0f), 0.1f).SetEase(Ease.Linear);
+        }
+    }
+
+    private void OnWeaponChanged(int previousValue, int newValue)
+    {
+        ApplyWeaponVisuals(newValue);
     }
 
     private void OnHealthChanged(int previousValue, int newValue)
@@ -99,17 +127,22 @@ public class FPSController : NetworkBehaviour
 
     public override void OnNetworkDespawn()
     {
+        networkWeaponIndex.OnValueChanged -= OnWeaponChanged;
+
         if (IsOwner)
         {
             DisableInputs();
             if (_health != null) _health.currentHealth.OnValueChanged -= OnHealthChanged;
         }
+        else
+        {
+            networkViewPitch.OnValueChanged -= OnPitchChanged;
+        }
     }
 
     private void Update()
     {
-        // Sadece kendi karakterimizi kontrol edebiliriz
-        if (!IsOwner) return;
+        if (!IsOwner) return; // Dışarıdan bakanların Update döngüsünde yapacak hiçbir işi kalmadı!
 
         // Eğer öldüysek hiçbir inputu kabul etme (kamera, hareket, silah hepsi kitlenir)
         if (_health != null && _health.isDead.Value) return;
@@ -147,6 +180,9 @@ public class FPSController : NetworkBehaviour
         // Sadece kamerayı yukarı/aşağı döndür
         _xRotation -= mouseY;
         _xRotation = Mathf.Clamp(_xRotation, -90f, 90f);
+
+        // Bakış açımızı (Pitch) ağdaki diğer oyunculara bildir
+        networkViewPitch.Value = _xRotation;
 
         if (playerCamera != null)
             playerCamera.localRotation = Quaternion.Euler(_xRotation - _currentRecoil.x, _currentRecoil.y, 0f);
@@ -358,6 +394,16 @@ public class FPSController : NetworkBehaviour
     {
         if (weapons == null || weapons.Length == 0) return;
 
+        if (IsOwner)
+        {
+            networkWeaponIndex.Value = weaponIndex;
+        }
+    }
+
+    private void ApplyWeaponVisuals(int weaponIndex)
+    {
+        if (weapons == null || weapons.Length == 0) return;
+
         _currentWeaponIndex = weaponIndex;
         
         // Tüm silah modellerini kapat, sadece seçileni aç
@@ -369,7 +415,11 @@ public class FPSController : NetworkBehaviour
             }
         }
         
-        Debug.Log(weapons[_currentWeaponIndex] != null ? $"{weapons[_currentWeaponIndex].weaponName} donanıldı." : "Silah donanıldı.");
+        // Sadece sahibi (Owner) konsol mesajını görsün
+        if (IsOwner)
+        {
+            Debug.Log(weapons[_currentWeaponIndex] != null ? $"{weapons[_currentWeaponIndex].weaponName} donanıldı." : "Silah donanıldı.");
+        }
     }
 
     // ── BOMBALAR VE EKSTRALAR ────────────────────────────────────────────

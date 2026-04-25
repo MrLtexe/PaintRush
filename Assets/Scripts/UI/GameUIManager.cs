@@ -1,6 +1,8 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using DG.Tweening;
 
 public class GameUIManager : MonoBehaviour
 {
@@ -18,6 +20,11 @@ public class GameUIManager : MonoBehaviour
     [SerializeField] private GameObject interactionPanel;
     [SerializeField] private Image interactionProgressBar;
     [SerializeField] private TMP_Text interactionText;
+
+    [Header("Ölüm ve Yeniden Doğma UI")]
+    [SerializeField] private GameObject deathPanel;
+    [SerializeField] private TMP_Text deathCountdownText;
+    private Coroutine _deathCoroutine;
 
     private void Awake()
     {
@@ -89,5 +96,42 @@ public class GameUIManager : MonoBehaviour
     public void UpdateHealthUI(int currentHealth, int maxHealth = 100)
     {
         if (healthText) healthText.text = $"Can: {currentHealth} / {maxHealth}";
+    }
+
+    public void ShowRespawnScreen(float duration)
+    {
+        if (deathPanel) deathPanel.SetActive(true);
+        if (_deathCoroutine != null) StopCoroutine(_deathCoroutine);
+        _deathCoroutine = StartCoroutine(RespawnCountdownRoutine(duration));
+    }
+
+    public void ShowDeadScreen()
+    {
+        if (deathPanel) deathPanel.SetActive(true);
+        if (deathCountdownText) deathCountdownText.text = "Öldün!\n(Bu el yeniden doğamazsın)";
+        if (_deathCoroutine != null) StopCoroutine(_deathCoroutine);
+    }
+
+    public void HideRespawnScreen()
+    {
+        if (deathPanel && deathPanel.activeSelf) deathPanel.SetActive(false);
+        if (_deathCoroutine != null) StopCoroutine(_deathCoroutine);
+    }
+
+    private IEnumerator RespawnCountdownRoutine(float duration)
+    {
+        int remaining = Mathf.CeilToInt(duration);
+        while (remaining > 0)
+        {
+            if (deathCountdownText)
+            {
+                deathCountdownText.text = $"Öldün!\nYeniden Doğmana: {remaining}";
+                deathCountdownText.transform.DOKill(true); // Önceki animasyonu sıfırla
+                deathCountdownText.transform.DOPunchScale(Vector3.one * 0.3f, 0.5f, 2, 0.5f); // Büyüyüp küçülme efekti
+            }
+            yield return new WaitForSeconds(1f);
+            remaining--;
+        }
+        if (deathCountdownText) deathCountdownText.text = "Doğuluyor...";
     }
 }

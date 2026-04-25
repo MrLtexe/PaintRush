@@ -19,6 +19,7 @@ public class PlayerHealth : NetworkBehaviour
         {
             currentHealth.OnValueChanged += OnHealthChanged;
             if (GameUIManager.Instance != null) GameUIManager.Instance.UpdateHealthUI(currentHealth.Value);
+            isDead.OnValueChanged += OnDeathStateChanged;
         }
     }
 
@@ -27,6 +28,27 @@ public class PlayerHealth : NetworkBehaviour
         if (IsOwner)
         {
             currentHealth.OnValueChanged -= OnHealthChanged;
+            isDead.OnValueChanged -= OnDeathStateChanged;
+        }
+    }
+
+    private void OnDeathStateChanged(bool previous, bool current)
+    {
+        if (current)
+        {
+            // Görev aşamasındaysak 5 saniyelik geri sayım ekranını, değilse kalıcı ölüm ekranını göster
+            if (GameManager.Instance != null && GameManager.Instance.CurrentState.Value == GameState.ObjectivePhase)
+            {
+                GameUIManager.Instance.ShowRespawnScreen(GameManager.Instance.respawnCooldown);
+            }
+            else
+            {
+                GameUIManager.Instance.ShowDeadScreen();
+            }
+        }
+        else
+        {
+            if (GameUIManager.Instance != null) GameUIManager.Instance.HideRespawnScreen();
         }
     }
 
