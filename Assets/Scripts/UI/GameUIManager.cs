@@ -73,6 +73,7 @@ public class GameUIManager : MonoBehaviour
             GameState.WaitingForPlayers => "Oyuncular Bekleniyor...",
             GameState.PreRound => "Hazırlık Evresi",
             GameState.ObjectivePhase => "Görev: Şalterleri Aç!",
+            GameState.DelayPhase => "Delay",
             GameState.TransitionPhase => "Bölge Değişimi",
             GameState.DefusePhase => "Görev: Bombayı İmha Et!",
             GameState.RoundEnd => "Raund Bitti",

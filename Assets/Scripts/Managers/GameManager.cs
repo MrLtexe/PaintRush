@@ -7,6 +7,7 @@ public enum GameState
     WaitingForPlayers, // Lobi/Yükleme ekranı
     PreRound,          // 5 sn hazırlık (Hareket kilitli)
     ObjectivePhase,    // 90 sn Switch açma (Ölünce 5 sn sonra doğma)
+    DelayPhase,        // Geçiş öncesi ses ve bekleme aşaması (Hareket kilitli)
     TransitionPhase,   // 3 sn ikincil spawnlara ışınlanma (Hareket kilitli)
     DefusePhase,       // 40 sn Bomba patlama süresi (Ölüm kalıcı)
     RoundEnd,          // Raund bitti, puanlar dağıtıldı
@@ -24,6 +25,7 @@ public class GameManager : NetworkBehaviour
     [Header("Süre Ayarları")]
     public float preRoundDuration = 5f;
     public float objectiveDuration = 90f;
+    public float delayDuration = 4f; // Delay aşaması süresi
     public float transitionDuration = 3f;
     public float defuseDuration = 40f;
     public float roundEndDuration = 5f;
@@ -38,6 +40,10 @@ public class GameManager : NetworkBehaviour
     [Header("Skor Tablosu")]
     public NetworkVariable<int> RenkliTeamScore = new NetworkVariable<int>(0);
     public NetworkVariable<int> RenksizTeamScore = new NetworkVariable<int>(0);
+
+    [Header("Ses Ayarları")]
+    public AudioSource announcementAudioSource;
+    public AudioClip transitionAnnouncement;
 
     private void Awake()
     {
@@ -89,6 +95,20 @@ public class GameManager : NetworkBehaviour
                 EndRound(2);
                 break;
                 
+            case GameState.DelayPhase:
+                // Delay bitti -> TransitionPhase'e geç, ölü/diri herkesi ışınla ve dirilt
+                PlayerHealth[] allPlayers = FindObjectsByType<PlayerHealth>(FindObjectsSortMode.None);
+                foreach (var player in allPlayers)
+                {
+                    if (player != null)
+                    {
+                        var (pos, rot) = PlayerSpawnManager.Instance.GetRandomSpawnPoint(player.GetTeam());
+                        player.Respawn(pos, rot); // isDead'i false yapar, canı 100'ler ve ışınlar
+                    }
+                }
+                ChangeState(GameState.TransitionPhase, transitionDuration);
+                break;
+
             case GameState.TransitionPhase:
                 // 3 sn ışınlanma arası bitti -> Bomba sayacı başlar (Renkli takım bombayı kurmuş sayılır)
                 ChangeState(GameState.DefusePhase, defuseDuration);
@@ -165,18 +185,17 @@ public class GameManager : NetworkBehaviour
     {
         if (CurrentState.Value == GameState.ObjectivePhase)
         {
-            // Yeni evreye (Defuse) geçmeden hemen önce, bütün oyuncuları (ölü/diri) ışınla ve canlarını fulle
-            PlayerHealth[] allPlayers = FindObjectsByType<PlayerHealth>(FindObjectsSortMode.None);
-            foreach (var player in allPlayers)
-            {
-                if (player != null)
-                {
-                    var (pos, rot) = PlayerSpawnManager.Instance.GetRandomSpawnPoint(player.GetTeam());
-                    player.Respawn(pos, rot); // isDead'i false yapar, canı 100'ler ve ışınlar
-                }
-            }
+            PlayAnnouncementRpc();
+            ChangeState(GameState.DelayPhase, delayDuration);
+        }
+    }
 
-            ChangeState(GameState.TransitionPhase, transitionDuration);
+    [Rpc(SendTo.Everyone)]
+    private void PlayAnnouncementRpc()
+    {
+        if (announcementAudioSource != null && transitionAnnouncement != null)
+        {
+            announcementAudioSource.PlayOneShot(transitionAnnouncement);
         }
     }
 
