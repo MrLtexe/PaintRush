@@ -119,15 +119,15 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 797140587594308233}
   serializedVersion: 2
-  m_LocalRotation: {x: 1.0145146e-17, y: -0.78507876, z: -1.0145146e-17, w: 0.619396}
-  m_LocalPosition: {x: 0.16222697, y: 1.1970994, z: 0.4}
+  m_LocalRotation: {x: 1.0771889e-17, y: -0.74395126, z: -9.477045e-18, w: 0.668234}
+  m_LocalPosition: {x: 0.163, y: 1.1970994, z: 0.559}
   m_LocalScale: {x: 0.043519113, y: 0.043519113, z: 0.043519113}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1930425445304817483}
   - {fileID: 7818761739306187317}
   m_Father: {fileID: 649554177867089967}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -96.138, z: 0}
 --- !u!33 &4031856490458746774
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -10552,7 +10552,7 @@ PrefabInstance:
       insertIndex: 2
       addedObject: {fileID: 1692085243054744675}
     - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: e73f1b6778930b643b021357b6ccc231, type: 3}
-      insertIndex: -1
+      insertIndex: 3
       addedObject: {fileID: 2826514307300750494}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e73f1b6778930b643b021357b6ccc231, type: 3}
@@ -10573,6 +10573,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e73f1b6778930b643b021357b6ccc231, type: 3}
       insertIndex: -1
       addedObject: {fileID: -4702969619911772910}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e73f1b6778930b643b021357b6ccc231, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4634652211363531963}
   m_SourcePrefab: {fileID: 100100000, guid: e73f1b6778930b643b021357b6ccc231, type: 3}
 --- !u!1 &164520722798203541 stripped
 GameObject:
@@ -10707,13 +10710,13 @@ MonoBehaviour:
   interactRange: 3
   interactLayer:
     serializedVersion: 2
-    m_Bits: 4294967291
+    m_Bits: 4294967176
   weapons:
   - {fileID: 7344280080507404602}
   - {fileID: 5828847919053899100}
   shootLayer:
     serializedVersion: 2
-    m_Bits: 4294967291
+    m_Bits: 4294967233
   _animator: {fileID: -4702969619911772910}
   networkViewPitch:
     UpdateTraits:
@@ -10721,16 +10724,6 @@ MonoBehaviour:
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 0
   networkWeaponIndex:
-    UpdateTraits:
-      MinSecondsBetweenUpdates: 0
-      MaxSecondsBetweenUpdates: 0
-    m_InternalValue: 0
-  networkVelocityX:
-    UpdateTraits:
-      MinSecondsBetweenUpdates: 0
-      MaxSecondsBetweenUpdates: 0
-    m_InternalValue: 0
-  networkVelocityZ:
     UpdateTraits:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
@@ -10773,6 +10766,34 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &4634652211363531963
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 164520722798203541}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a459022990eb28438deb149d1ce62dc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  NetworkAnimatorExpanded: 0
+  AuthorityMode: 0
+  m_Animator: {fileID: -4702969619911772910}
+  TransitionStateInfoList: []
+  AnimatorParameterEntries:
+    ParameterEntries:
+    - name: VelocityX
+      NameHash: -1695058062
+      Synchronize: 1
+      ParameterType: 1
+    - name: VelocityZ
+      NameHash: 1962481246
+      Synchronize: 1
+      ParameterType: 1
+  AnimatorParametersExpanded: 0
 --- !u!4 &649554177867089967 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: e73f1b6778930b643b021357b6ccc231, type: 3}
