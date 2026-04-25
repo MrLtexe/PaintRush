@@ -71,6 +71,17 @@ public class FPSController : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         _health = GetComponent<PlayerHealth>();
+
+        // Güvenlik: Eğer Inspector'dan atanmayı unutursak alt objelerden otomatik bulmaya çalış
+        if (playerCamera == null)
+        {
+            Camera cam = GetComponentInChildren<Camera>();
+            if (cam != null) playerCamera = cam.transform;
+        }
+        if (_animator == null)
+        {
+            _animator = GetComponentInChildren<Animator>();
+        }
         
         networkWeaponIndex.OnValueChanged += OnWeaponChanged;
         ApplyWeaponVisuals(networkWeaponIndex.Value); // Herkes diğer oyuncuların güncel silahını görebilsin
