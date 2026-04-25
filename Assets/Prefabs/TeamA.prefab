@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 8006872812327436833}
   - component: {fileID: 4237237363087291603}
   - component: {fileID: 4038476305582441821}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: RifleRef
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -245,7 +245,7 @@ GameObject:
   - component: {fileID: 3885461610207613404}
   - component: {fileID: 6186984535334791583}
   - component: {fileID: 5261248181097632981}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: MuzzleFlashPistol
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5079,7 +5079,7 @@ GameObject:
   - component: {fileID: 4497365818328074626}
   - component: {fileID: 2749678432209553392}
   - component: {fileID: 5056752470787150090}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Camera
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
@@ -5215,7 +5215,7 @@ GameObject:
   - component: {fileID: 6389277439309608334}
   - component: {fileID: 7095405620042271269}
   - component: {fileID: 9036495430336497041}
-  m_Layer: 5
+  m_Layer: 6
   m_Name: NameText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5353,7 +5353,7 @@ GameObject:
   - component: {fileID: 3556232324076018132}
   - component: {fileID: 4105786853076690204}
   - component: {fileID: 6237622017318801810}
-  m_Layer: 5
+  m_Layer: 6
   m_Name: NameTagCanvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5457,7 +5457,7 @@ GameObject:
   - component: {fileID: 4668507390429946967}
   - component: {fileID: 6430615799717247695}
   - component: {fileID: 7896140264743585029}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: PistolRef
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5688,7 +5688,7 @@ GameObject:
   - component: {fileID: 7215419036146477436}
   - component: {fileID: 7044688265346785994}
   - component: {fileID: 6846685029862460567}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: MuzzleFlashRifle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -10527,7 +10527,7 @@ GameObject:
   - component: {fileID: 3623274725948621800}
   - component: {fileID: 5040868325360667583}
   - component: {fileID: 5897392166541781357}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: TeamA
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -10757,13 +10757,13 @@ MonoBehaviour:
   interactRange: 3
   interactLayer:
     serializedVersion: 2
-    m_Bits: 4294967240
+    m_Bits: 65
   weapons:
   - {fileID: 4237237363087291603}
   - {fileID: 6430615799717247695}
   shootLayer:
     serializedVersion: 2
-    m_Bits: 4294967240
+    m_Bits: 4294967232
   networkViewPitch:
     UpdateTraits:
       MinSecondsBetweenUpdates: 0
