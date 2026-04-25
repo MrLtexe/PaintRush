@@ -45,8 +45,7 @@ public class PlayerSpawnManager : NetworkBehaviour
                 if (teamBSpawns.Count > 0)
                 {
                     var spawn = teamBSpawns[bIdx % teamBSpawns.Count];
-                    // Çakışmayı ve yerin altına düşmeyi engellemek için hafif bir yükseklik ve rastgele dağılım ekliyoruz
-                    spawnPos = spawn.position + new Vector3(Random.Range(-0.5f, 0.5f), 1f, Random.Range(-0.5f, 0.5f));
+                    spawnPos = spawn.position;
                     spawnRot = spawn.rotation;
                 }
                 bIdx++;
@@ -57,7 +56,7 @@ public class PlayerSpawnManager : NetworkBehaviour
                 if (teamASpawns.Count > 0)
                 {
                     var spawn = teamASpawns[aIdx % teamASpawns.Count];
-                    spawnPos = spawn.position + new Vector3(Random.Range(-0.5f, 0.5f), 1f, Random.Range(-0.5f, 0.5f));
+                    spawnPos = spawn.position;
                     spawnRot = spawn.rotation;
                 }
                 aIdx++;
@@ -112,9 +111,6 @@ public class PlayerSpawnManager : NetworkBehaviour
         if (spawns.Count == 0) return (Vector3.zero, Quaternion.identity);
         
         Transform spawn = spawns[Random.Range(0, spawns.Count)];
-        
-        // Yeniden doğmalarda da aynı güvenli ofseti uyguluyoruz
-        Vector3 offsetPos = spawn.position + new Vector3(Random.Range(-0.5f, 0.5f), 1f, Random.Range(-0.5f, 0.5f));
-        return (offsetPos, spawn.rotation);
+        return (spawn.position, spawn.rotation);
     }
 }
