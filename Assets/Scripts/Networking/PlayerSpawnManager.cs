@@ -48,7 +48,9 @@ public class PlayerSpawnManager : NetworkBehaviour
             }
 
             var go = Instantiate(prefab, spawn.position, spawn.rotation);
-            go.GetComponent<NetworkObject>().SpawnAsPlayerObject(client.ClientId);
+            var netObj = go.GetComponent<NetworkObject>();
+            if (netObj == null) { Debug.LogError($"[Spawn] {prefab.name} prefab'ında NetworkObject yok!"); Destroy(go); continue; }
+            netObj.SpawnAsPlayerObject(client.ClientId);
         }
     }
 
