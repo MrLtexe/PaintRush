@@ -54,7 +54,9 @@ public abstract class WeaponBase : NetworkBehaviour
             hitNormal = hit.normal; // Vurulan yüzeyin baktığı yön
             spawnDecal = true; // Bir yüzeye çarptık, mermi izi çıkabilir
 
-            if (hit.collider.TryGetComponent(out PlayerHealth targetHealth))
+            // Çarptığımız objede veya onun ebeveyn objelerinde (parent) PlayerHealth var mı?
+            PlayerHealth targetHealth = hit.collider.GetComponentInParent<PlayerHealth>();
+            if (targetHealth != null)
             {
                 spawnDecal = false; // Vurduğumuz şey oyuncuysa duvar deliği çıkartma
 

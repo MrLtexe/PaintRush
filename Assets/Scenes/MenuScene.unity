@@ -3809,7 +3809,7 @@ MonoBehaviour:
   teamAButton: {fileID: 1296446940}
   teamBButton: {fileID: 1132877165}
   playerListText: {fileID: 1483580699}
-  gameSceneName: HelloWorld
+  gameSceneName: GameScene
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

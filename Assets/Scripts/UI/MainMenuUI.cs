@@ -29,7 +29,7 @@ public class MainMenuUI : MonoBehaviour
     [SerializeField] private TMP_Text playerListText;
 
     [Header("Oyun sahnesi")]
-    [SerializeField] private string gameSceneName = "HelloWorld";
+    [SerializeField] private string gameSceneName = "GameScene";
 
     private NetworkBootstrap _bootstrap;
 
