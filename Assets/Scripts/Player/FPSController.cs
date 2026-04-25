@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Unity.Netcode;
+using DG.Tweening;
 
 [RequireComponent(typeof(CharacterController))]
 public class FPSController : NetworkBehaviour
@@ -36,15 +37,18 @@ public class FPSController : NetworkBehaviour
     public LayerMask interactLayer = Physics.DefaultRaycastLayers;
 
     [Header("Silah ve Hasar Ayarları")]
-    public int rifleDamage = 30;
-    public int pistolDamage = 15;
-    public float weaponRange = 100f;
+    public WeaponBase[] weapons; // 0: Tüfek, 1: Tabanca
     public LayerMask shootLayer = Physics.DefaultRaycastLayers; // Sadece oyuncuları (veya duvarları) vurması için ayarlayabilirsin
 
     private CharacterController _controller;
     private Vector3 _velocity;
     private bool _isGrounded;
     private float _xRotation = 0f;
+
+    [Header("Geri Tepme (Recoil) Ayarları")]
+    public float recoilKickDuration = 0.05f; // Sarsıntının ne kadar hızlı vuracağı
+    public float recoilReturnDuration = 0.25f; // Namlunun eski yerine ne kadar hızlı döneceği
+    private Vector3 _currentRecoil;
 
     private InteractableSwitch _currentSwitch;
     private BombController _currentBomb;
@@ -79,6 +83,9 @@ public class FPSController : NetworkBehaviour
         {
             _health.currentHealth.OnValueChanged += OnHealthChanged;
         }
+        
+        // Oyun başladığında varsayılan silahı kuşan
+        SwitchWeapon(0);
     }
 
     private void OnHealthChanged(int previousValue, int newValue)
@@ -142,7 +149,7 @@ public class FPSController : NetworkBehaviour
         _xRotation = Mathf.Clamp(_xRotation, -90f, 90f);
 
         if (playerCamera != null)
-            playerCamera.localRotation = Quaternion.Euler(_xRotation, 0f, 0f);
+            playerCamera.localRotation = Quaternion.Euler(_xRotation - _currentRecoil.x, _currentRecoil.y, 0f);
 
         // Karakterin tüm gövdesini sağa/sola döndür
         transform.Rotate(Vector3.up * mouseX);
@@ -201,7 +208,7 @@ public class FPSController : NetworkBehaviour
         }
     }
 
-    private int GetMyTeam()
+    public int GetMyTeam()
     {
         if (NetworkLobbyManager.Instance == null) return 1;
         foreach (var player in NetworkLobbyManager.Instance.LobbyPlayers)
@@ -296,14 +303,33 @@ public class FPSController : NetworkBehaviour
         if (GameUIManager.Instance != null) GameUIManager.Instance.HideInteraction();
     }
 
+    public void AddRecoil(float verticalRecoil, float horizontalRecoil)
+    {
+        DOTween.Kill("Recoil"); // Eğer önceki sarsıntı bitmediyse iptal et (Tarama yaparken üst üste binebilmesi için)
+
+        // O anki sarsıntının üzerine yeni gücü ekle
+        Vector3 targetRecoil = _currentRecoil + new Vector3(verticalRecoil, Random.Range(-horizontalRecoil, horizontalRecoil), 0f);
+
+        // Sırayla çalışacak bir animasyon zinciri (Sequence) oluştur
+        Sequence recoilSeq = DOTween.Sequence().SetId("Recoil");
+        
+        // 1. Kamera hızlıca yukarı seker (Kick)
+        recoilSeq.Append(DOTween.To(() => _currentRecoil, x => _currentRecoil = x, targetRecoil, recoilKickDuration).SetEase(Ease.OutSine));
+        // 2. Kamera yavaşça orijinal (0) konumuna döner (Return)
+        recoilSeq.Append(DOTween.To(() => _currentRecoil, x => _currentRecoil = x, Vector3.zero, recoilReturnDuration).SetEase(Ease.InOutSine));
+    }
+
     // ── SİLAH VE ÇATIŞMA ─────────────────────────────────────────────────
 
     private void HandleWeapons()
     {
-        // Sol tık (Ateş etme)
-        if (attackInput.action.WasPressedThisFrame())
+        bool isShootingDown = attackInput.action.WasPressedThisFrame();
+        bool isShootingPressed = attackInput.action.IsPressed();
+
+        // Seçili silah varsa atış mantığını ona devret
+        if (weapons != null && weapons.Length > _currentWeaponIndex && weapons[_currentWeaponIndex] != null)
         {
-            Shoot();
+            weapons[_currentWeaponIndex].HandleShooting(isShootingDown, isShootingPressed, playerCamera, this);
         }
 
         // Scroll ile silah değiştirme (Mouse ScrollWheel)
@@ -315,31 +341,8 @@ public class FPSController : NetworkBehaviour
         }
     }
 
-    private void Shoot()
-    {
-        int damage = _currentWeaponIndex == 0 ? rifleDamage : pistolDamage;
-        // İleride buraya namlu ucundan mermi izi (Trail) veya ses (Audio) eklenebilir.
-
-        Ray ray = new Ray(playerCamera.position, playerCamera.forward);
-        if (Physics.Raycast(ray, out RaycastHit hit, weaponRange, shootLayer))
-        {
-            if (hit.collider.TryGetComponent(out PlayerHealth targetHealth))
-            {
-                // Kendi takım arkadaşımızı (Friendly Fire) ve kendimizi vurmayı engelliyoruz
-                if (targetHealth.OwnerClientId != OwnerClientId && targetHealth.GetTeam() != GetMyTeam())
-                {
-                    var targetNetObj = targetHealth.GetComponent<NetworkObject>();
-                    if (targetNetObj != null)
-                    {
-                        HitPlayerRpc(targetNetObj.NetworkObjectId, damage);
-                    }
-                }
-            }
-        }
-    }
-
     [Rpc(SendTo.Server)]
-    private void HitPlayerRpc(ulong targetNetworkObjectId, int damage, RpcParams rpcParams = default)
+    public void HitPlayerRpc(ulong targetNetworkObjectId, int damage, RpcParams rpcParams = default)
     {
         if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(targetNetworkObjectId, out NetworkObject targetNetObj))
         {
@@ -353,9 +356,20 @@ public class FPSController : NetworkBehaviour
 
     private void SwitchWeapon(int weaponIndex)
     {
+        if (weapons == null || weapons.Length == 0) return;
+
         _currentWeaponIndex = weaponIndex;
-        Debug.Log(_currentWeaponIndex == 0 ? "Tüfek donanıldı." : "Tabanca donanıldı.");
-        // TODO: Silah modellerini (Mesh) aç/kapa yapma kodları buraya eklenecek
+        
+        // Tüm silah modellerini kapat, sadece seçileni aç
+        for (int i = 0; i < weapons.Length; i++)
+        {
+            if (weapons[i] != null)
+            {
+                weapons[i].gameObject.SetActive(i == _currentWeaponIndex);
+            }
+        }
+        
+        Debug.Log(weapons[_currentWeaponIndex] != null ? $"{weapons[_currentWeaponIndex].weaponName} donanıldı." : "Silah donanıldı.");
     }
 
     // ── BOMBALAR VE EKSTRALAR ────────────────────────────────────────────
