@@ -32,22 +32,33 @@ public class PlayerSpawnManager : NetworkBehaviour
         {
             int team = GetTeamForClient(client.ClientId);
             GameObject prefab;
-            Transform spawn;
+            Vector3 spawnPos = Vector3.zero; // Eğer spawn noktası yoksa haritanın ortasına atsın
+            Quaternion spawnRot = Quaternion.identity;
 
             if (team == 2)
             {
                 prefab = teamBPrefab;
-                spawn = teamBSpawns[bIdx % teamBSpawns.Count];
+                if (teamBSpawns.Count > 0)
+                {
+                    var spawn = teamBSpawns[bIdx % teamBSpawns.Count];
+                    spawnPos = spawn.position;
+                    spawnRot = spawn.rotation;
+                }
                 bIdx++;
             }
             else
             {
                 prefab = teamAPrefab;
-                spawn = teamASpawns[aIdx % teamASpawns.Count];
+                if (teamASpawns.Count > 0)
+                {
+                    var spawn = teamASpawns[aIdx % teamASpawns.Count];
+                    spawnPos = spawn.position;
+                    spawnRot = spawn.rotation;
+                }
                 aIdx++;
             }
 
-            var go = Instantiate(prefab, spawn.position, spawn.rotation);
+            var go = Instantiate(prefab, spawnPos, spawnRot);
             var netObj = go.GetComponent<NetworkObject>();
             if (netObj == null) { Debug.LogError($"[Spawn] {prefab.name} prefab'ında NetworkObject yok!"); Destroy(go); continue; }
             netObj.SpawnAsPlayerObject(client.ClientId);

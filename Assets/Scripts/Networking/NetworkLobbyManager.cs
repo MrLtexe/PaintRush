@@ -43,6 +43,9 @@ public class NetworkLobbyManager : NetworkBehaviour
 
         // Awake içinde listeyi mutlaka oluşturmalıyız
         LobbyPlayers = new NetworkList<LobbyPlayerState>();
+
+        // Sahne değiştiğinde lobi verilerinin kaybolmaması (silinmemesi) için bu kodu ekliyoruz.
+        DontDestroyOnLoad(gameObject);
     }
 
     public override void OnNetworkSpawn()
