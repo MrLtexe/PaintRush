@@ -1,3 +1,4 @@
+using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -26,6 +27,7 @@ public class GameManager : NetworkBehaviour
     public float transitionDuration = 3f;
     public float defuseDuration = 40f;
     public float roundEndDuration = 5f;
+    public float respawnCooldown = 5f;
 
     [Header("Görev Ayarları")]
     public NetworkVariable<int> ActivatedSwitches = new NetworkVariable<int>(0);
@@ -160,6 +162,61 @@ public class GameManager : NetworkBehaviour
         else
         {
             ChangeState(GameState.RoundEnd, roundEndDuration);
+        }
+    }
+
+    // ── Ölüm ve Doğma Sistemi ────────────────────────────────────────────
+
+    public void OnPlayerDied(PlayerHealth victim)
+    {
+        if (!IsServer) return;
+
+        int teamId = victim.GetTeam();
+        Debug.Log($"[GameManager] Oyuncu öldü. Takım: {(teamId == 1 ? "A" : "B")} | Aşama: {CurrentState.Value}");
+
+        if (CurrentState.Value == GameState.ObjectivePhase)
+        {
+            // Deathmatch evresi: 5 saniye sonra doğur
+            StartCoroutine(RespawnRoutine(victim, respawnCooldown));
+        }
+        else if (CurrentState.Value == GameState.DefusePhase)
+        {
+            // Kalıcı ölüm evresi: B takımı tamamen öldü mü kontrol et
+            if (teamId == 2) CheckTeamBWipeout();
+        }
+    }
+
+    private IEnumerator RespawnRoutine(PlayerHealth victim, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (victim == null || !victim.IsSpawned) yield break;
+
+        // Raund aniden biterse (biri kazanırsa) havada doğurmamak için kontrol ediyoruz
+        if (CurrentState.Value == GameState.ObjectivePhase)
+        {
+            var (pos, rot) = PlayerSpawnManager.Instance.GetRandomSpawnPoint(victim.GetTeam());
+            victim.Respawn(pos, rot);
+        }
+    }
+
+    private void CheckTeamBWipeout()
+    {
+        PlayerHealth[] allPlayers = FindObjectsByType<PlayerHealth>(FindObjectsSortMode.None);
+        bool isAnyBAlive = false;
+
+        foreach (var player in allPlayers)
+        {
+            if (player.GetTeam() == 2 && !player.isDead.Value)
+            {
+                isAnyBAlive = true;
+                break;
+            }
+        }
+
+        if (!isAnyBAlive)
+        {
+            Debug.Log("[GameManager] B Takımının tamamı öldü! A Takımı kazanıyor.");
+            EndRound(1); // 1: A Takımı
         }
     }
 }

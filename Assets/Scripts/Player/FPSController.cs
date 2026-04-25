@@ -35,12 +35,19 @@ public class FPSController : NetworkBehaviour
     public float interactRange = 3f;
     public LayerMask interactLayer = Physics.DefaultRaycastLayers;
 
+    [Header("Silah ve Hasar Ayarları")]
+    public int rifleDamage = 30;
+    public int pistolDamage = 15;
+    public float weaponRange = 100f;
+    public LayerMask shootLayer = Physics.DefaultRaycastLayers; // Sadece oyuncuları (veya duvarları) vurması için ayarlayabilirsin
+
     private CharacterController _controller;
     private Vector3 _velocity;
     private bool _isGrounded;
     private float _xRotation = 0f;
 
     private InteractableSwitch _currentSwitch;
+    private BombController _currentBomb;
     private bool _isInteracting;
     private float _interactTimer;
     private PlayerHealth _health;
@@ -96,6 +103,9 @@ public class FPSController : NetworkBehaviour
     {
         // Sadece kendi karakterimizi kontrol edebiliriz
         if (!IsOwner) return;
+
+        // Eğer öldüysek hiçbir inputu kabul etme (kamera, hareket, silah hepsi kitlenir)
+        if (_health != null && _health.isDead.Value) return;
 
         _isGrounded = _controller.isGrounded;
         if (_isGrounded && _velocity.y < 0)
@@ -179,8 +189,27 @@ public class FPSController : NetworkBehaviour
                         StartInteraction(sw);
                     }
                 }
+                else if (hit.collider.TryGetComponent(out BombController bomb))
+                {
+                    // Sadece B Takımı çözebilir, çözülmediyse ve Defuse evresindeysek
+                    if (GetMyTeam() == 2 && !bomb.isDefused.Value && !bomb.isBeingDefused.Value && GameManager.Instance.CurrentState.Value == GameState.DefusePhase)
+                    {
+                        StartBombInteraction(bomb);
+                    }
+                }
             }
         }
+    }
+
+    private int GetMyTeam()
+    {
+        if (NetworkLobbyManager.Instance == null) return 1;
+        foreach (var player in NetworkLobbyManager.Instance.LobbyPlayers)
+        {
+            if (player.ClientId == NetworkManager.Singleton.LocalClientId)
+                return player.TeamId;
+        }
+        return 1;
     }
 
     private void StartInteraction(InteractableSwitch sw)
@@ -189,37 +218,82 @@ public class FPSController : NetworkBehaviour
         _isInteracting = true;
         _interactTimer = 0f;
         _currentSwitch.SetInteractingRpc(true); // Animasyonu başlat
+        if (GameUIManager.Instance != null) GameUIManager.Instance.ShowInteraction("Şalter Açılıyor...", 0f);
+    }
+
+    private void StartBombInteraction(BombController bomb)
+    {
+        _currentBomb = bomb;
+        _isInteracting = true;
+        _interactTimer = 0f;
+        _currentBomb.SetDefusingRpc(true); 
+        if (GameUIManager.Instance != null) GameUIManager.Instance.ShowInteraction("Bomba İmha Ediliyor...", 0f);
     }
 
     private void HandleInteracting()
     {
         // Oyuncu tuşu bırakırsa veya hedeften uzağa/başka yöne bakarsa iptal et
         Ray ray = new Ray(playerCamera.position, playerCamera.forward);
-        bool isLookingAtSwitch = Physics.Raycast(ray, out RaycastHit hit, interactRange, interactLayer) && hit.collider.gameObject == _currentSwitch.gameObject;
+        bool isLookingAtTarget = Physics.Raycast(ray, out RaycastHit hit, interactRange, interactLayer);
 
-        if (!interactInput.action.IsPressed() || !isLookingAtSwitch)
+        bool isValidTarget = false;
+        if (isLookingAtTarget)
+        {
+            if (_currentSwitch != null && hit.collider.gameObject == _currentSwitch.gameObject) isValidTarget = true;
+            if (_currentBomb != null && hit.collider.gameObject == _currentBomb.gameObject) isValidTarget = true;
+        }
+
+        if (!interactInput.action.IsPressed() || !isValidTarget)
         {
             CancelInteraction();
             return;
         }
 
         _interactTimer += Time.deltaTime;
-        if (_interactTimer >= _currentSwitch.interactDuration)
+
+        if (_currentSwitch != null)
         {
-            _currentSwitch.TryActivateRpc(); // Başarıyla tamamlandı
-            _isInteracting = false;
-            _currentSwitch = null;
+            if (GameUIManager.Instance != null) GameUIManager.Instance.ShowInteraction("Şalter Açılıyor...", _interactTimer / _currentSwitch.interactDuration);
+
+            if (_interactTimer >= _currentSwitch.interactDuration)
+            {
+                _currentSwitch.TryActivateRpc(); // Başarıyla tamamlandı
+                _isInteracting = false;
+                _currentSwitch = null;
+                if (GameUIManager.Instance != null) GameUIManager.Instance.HideInteraction();
+            }
+        }
+        else if (_currentBomb != null)
+        {
+            if (GameUIManager.Instance != null) GameUIManager.Instance.ShowInteraction("Bomba İmha Ediliyor...", _interactTimer / _currentBomb.defuseDuration);
+
+            if (_interactTimer >= _currentBomb.defuseDuration)
+            {
+                _currentBomb.TryDefuseRpc(); // Başarıyla imha edildi
+                _isInteracting = false;
+                _currentBomb = null;
+                if (GameUIManager.Instance != null) GameUIManager.Instance.HideInteraction();
+            }
         }
     }
 
     private void CancelInteraction()
     {
-        if (_isInteracting && _currentSwitch != null)
+        if (!_isInteracting) return;
+
+        if (_currentSwitch != null)
         {
             _currentSwitch.SetInteractingRpc(false); // Animasyonu iptal edip geri sar
-            _isInteracting = false;
             _currentSwitch = null;
         }
+        else if (_currentBomb != null)
+        {
+            _currentBomb.SetDefusingRpc(false);
+            _currentBomb = null;
+        }
+        
+        _isInteracting = false;
+        if (GameUIManager.Instance != null) GameUIManager.Instance.HideInteraction();
     }
 
     // ── SİLAH VE ÇATIŞMA ─────────────────────────────────────────────────
@@ -229,8 +303,7 @@ public class FPSController : NetworkBehaviour
         // Sol tık (Ateş etme)
         if (attackInput.action.WasPressedThisFrame())
         {
-            // TODO: Ateş etme mantığı buraya eklenecek
-            Debug.Log(_currentWeaponIndex == 0 ? "Tüfek ile ateş edildi!" : "Tabanca ile ateş edildi!");
+            Shoot();
         }
 
         // Scroll ile silah değiştirme (Mouse ScrollWheel)
@@ -239,6 +312,42 @@ public class FPSController : NetworkBehaviour
             float scrollY = scrollWeaponInput.action.ReadValue<Vector2>().y;
             if (scrollY > 0) SwitchWeapon(0);      // İleri Scroll -> Tüfek
             else if (scrollY < 0) SwitchWeapon(1); // Geri Scroll -> Tabanca
+        }
+    }
+
+    private void Shoot()
+    {
+        int damage = _currentWeaponIndex == 0 ? rifleDamage : pistolDamage;
+        // İleride buraya namlu ucundan mermi izi (Trail) veya ses (Audio) eklenebilir.
+
+        Ray ray = new Ray(playerCamera.position, playerCamera.forward);
+        if (Physics.Raycast(ray, out RaycastHit hit, weaponRange, shootLayer))
+        {
+            if (hit.collider.TryGetComponent(out PlayerHealth targetHealth))
+            {
+                // Kendi takım arkadaşımızı (Friendly Fire) ve kendimizi vurmayı engelliyoruz
+                if (targetHealth.OwnerClientId != OwnerClientId && targetHealth.GetTeam() != GetMyTeam())
+                {
+                    var targetNetObj = targetHealth.GetComponent<NetworkObject>();
+                    if (targetNetObj != null)
+                    {
+                        HitPlayerRpc(targetNetObj.NetworkObjectId, damage);
+                    }
+                }
+            }
+        }
+    }
+
+    [Rpc(SendTo.Server)]
+    private void HitPlayerRpc(ulong targetNetworkObjectId, int damage, RpcParams rpcParams = default)
+    {
+        if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(targetNetworkObjectId, out NetworkObject targetNetObj))
+        {
+            if (targetNetObj.TryGetComponent(out PlayerHealth health))
+            {
+                health.TakeDamage(damage);
+                Debug.Log($"[Server] {targetNetworkObjectId} ID'li oyuncu vuruldu. Kalan Can: {health.currentHealth.Value}");
+            }
         }
     }
 

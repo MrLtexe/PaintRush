@@ -4,10 +4,18 @@ using UnityEngine;
 
 public class PlayerSpawnManager : NetworkBehaviour
 {
+    public static PlayerSpawnManager Instance { get; private set; }
+
     [SerializeField] private GameObject teamAPrefab;
     [SerializeField] private GameObject teamBPrefab;
     [SerializeField] private Transform teamASpawnParent; // child: 1, 2
     [SerializeField] private Transform teamBSpawnParent; // child: 1, 2
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        Instance = this;
+    }
 
     public override void OnNetworkSpawn()
     {
@@ -88,5 +96,15 @@ public class PlayerSpawnManager : NetworkBehaviour
             int j = Random.Range(0, i + 1);
             (list[i], list[j]) = (list[j], list[i]);
         }
+    }
+
+    // GameManager'ın ölen oyuncuyu doğru noktada doğurabilmesi için
+    public (Vector3 position, Quaternion rotation) GetRandomSpawnPoint(int teamId)
+    {
+        var spawns = teamId == 2 ? GetChildren(teamBSpawnParent) : GetChildren(teamASpawnParent);
+        if (spawns.Count == 0) return (Vector3.zero, Quaternion.identity);
+        
+        Transform spawn = spawns[Random.Range(0, spawns.Count)];
+        return (spawn.position, spawn.rotation);
     }
 }

@@ -13,6 +13,26 @@ public class PlayerHealth : NetworkBehaviour
             currentHealth.Value = 100;
             isDead.Value = false;
         }
+
+        // Sadece kendi karakterimizin can değişimlerini dinliyoruz
+        if (IsOwner)
+        {
+            currentHealth.OnValueChanged += OnHealthChanged;
+            if (GameUIManager.Instance != null) GameUIManager.Instance.UpdateHealthUI(currentHealth.Value);
+        }
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        if (IsOwner)
+        {
+            currentHealth.OnValueChanged -= OnHealthChanged;
+        }
+    }
+
+    private void OnHealthChanged(int previous, int current)
+    {
+        if (GameUIManager.Instance != null) GameUIManager.Instance.UpdateHealthUI(current);
     }
 
     // Sadece sunucu hasar verebilir
@@ -33,6 +53,42 @@ public class PlayerHealth : NetworkBehaviour
         isDead.Value = true;
         // TODO: Karakteri gizle / Ragdoll yarat
         
-        // TODO: GameManager'a sor -> Hangi state'deyiz? Cooldown ile mi doğacağım yoksa tamamen mi öldüm?
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.OnPlayerDied(this);
+        }
+    }
+
+    public void Respawn(Vector3 spawnPos, Quaternion spawnRot)
+    {
+        if (!IsServer) return;
+
+        isDead.Value = false;
+        currentHealth.Value = 100;
+
+        // İstemci (Client) hareket yetkisine sahip olduğu için doğrudan sunucudan pozisyonunu değiştiremeyiz.
+        // Sahibine "Kendini buraya ışınla" demek için RPC kullanıyoruz.
+        TeleportClientRpc(spawnPos, spawnRot);
+    }
+
+    [Rpc(SendTo.Owner)]
+    private void TeleportClientRpc(Vector3 pos, Quaternion rot, RpcParams rpcParams = default)
+    {
+        // Unity'de CharacterController aktifken transform.position değiştirmek hatalara yol açar
+        var cc = GetComponent<CharacterController>();
+        if (cc != null) cc.enabled = false;
+        transform.position = pos;
+        transform.rotation = rot;
+        if (cc != null) cc.enabled = true;
+    }
+
+    public int GetTeam()
+    {
+        if (NetworkLobbyManager.Instance == null) return 1;
+        foreach (var player in NetworkLobbyManager.Instance.LobbyPlayers)
+        {
+            if (player.ClientId == OwnerClientId) return player.TeamId;
+        }
+        return 1;
     }
 }

@@ -1,14 +1,29 @@
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 
 public class GameUIManager : MonoBehaviour
 {
+    public static GameUIManager Instance { get; private set; }
+
     [Header("UI Elementleri")]
     [SerializeField] private TMP_Text timerText;
     [SerializeField] private TMP_Text teamAScoreText;
     [SerializeField] private TMP_Text teamBScoreText;
     [SerializeField] private TMP_Text phaseText;
     [SerializeField] private TMP_Text switchesText;
+    [SerializeField] private TMP_Text healthText;
+
+    [Header("Etkileşim (İlerleme) UI")]
+    [SerializeField] private GameObject interactionPanel;
+    [SerializeField] private Image interactionProgressBar;
+    [SerializeField] private TMP_Text interactionText;
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        Instance = this;
+    }
 
     private void Update()
     {
@@ -57,5 +72,22 @@ public class GameUIManager : MonoBehaviour
             GameState.MatchEnd => "Maç Bitti",
             _ => ""
         };
+    }
+
+    public void ShowInteraction(string message, float progress)
+    {
+        if (interactionPanel && !interactionPanel.activeSelf) interactionPanel.SetActive(true);
+        if (interactionText) interactionText.text = message;
+        if (interactionProgressBar) interactionProgressBar.fillAmount = progress;
+    }
+
+    public void HideInteraction()
+    {
+        if (interactionPanel && interactionPanel.activeSelf) interactionPanel.SetActive(false);
+    }
+
+    public void UpdateHealthUI(int currentHealth, int maxHealth = 100)
+    {
+        if (healthText) healthText.text = $"Can: {currentHealth} / {maxHealth}";
     }
 }
