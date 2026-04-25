@@ -73,6 +73,9 @@ public abstract class WeaponBase : NetworkBehaviour
             }
         }
 
+        // Editor üzerinde merminin nereye gittiğini görmek için Debug çizgisi (2 saniye ekranda kalır)
+        Debug.DrawLine(ray.origin, hitPoint, Color.red, 2f);
+
         // Görsel efektleri (Muzzle Flash ve Trail) ağdaki herkese göster
         PlayShootVisualsRpc(hitPoint, hitNormal, spawnDecal);
 
