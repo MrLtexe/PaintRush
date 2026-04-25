@@ -45,9 +45,14 @@ public class FPSController : NetworkBehaviour
     private bool _isGrounded;
     private float _xRotation = 0f;
 
+    [Header("Animasyon")]
+    [SerializeField] private Animator _animator;
+    private static readonly int AnimSpeed = Animator.StringToHash("Speed");
+
     [Header("Ağ Senkronizasyonu")]
     public NetworkVariable<float> networkViewPitch = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<int> networkWeaponIndex = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    public NetworkVariable<float> networkMoveSpeed = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
     [Header("Geri Tepme (Recoil) Ayarları")]
     public float recoilKickDuration = 0.05f; // Sarsıntının ne kadar hızlı vuracağı
@@ -88,6 +93,8 @@ public class FPSController : NetworkBehaviour
 
             // Yeni açı değerini sadece değiştiğinde dinle
             networkViewPitch.OnValueChanged += OnPitchChanged;
+            networkMoveSpeed.OnValueChanged += OnMoveSpeedChanged;
+            if (_animator) _animator.SetFloat(AnimSpeed, networkMoveSpeed.Value);
             return;
         }
 
@@ -104,6 +111,11 @@ public class FPSController : NetworkBehaviour
         {
             _health.currentHealth.OnValueChanged += OnHealthChanged;
         }
+    }
+
+    private void OnMoveSpeedChanged(float previousValue, float newValue)
+    {
+        if (_animator) _animator.SetFloat(AnimSpeed, newValue);
     }
 
     private void OnPitchChanged(float previousValue, float newValue)
@@ -141,6 +153,7 @@ public class FPSController : NetworkBehaviour
         else
         {
             networkViewPitch.OnValueChanged -= OnPitchChanged;
+            networkMoveSpeed.OnValueChanged -= OnMoveSpeedChanged;
         }
     }
 
@@ -219,10 +232,14 @@ public class FPSController : NetworkBehaviour
         Vector2 moveValue = moveInput.action.ReadValue<Vector2>();
         Vector3 move = transform.right * moveValue.x + transform.forward * moveValue.y;
 
-        // Shift'e basılıysa koşma hızını al, değilse yürüme hızı
-        float currentSpeed = sprintInput.action.IsPressed() ? sprintSpeed : walkSpeed;
-
+        bool isSprinting = sprintInput.action.IsPressed();
+        float currentSpeed = isSprinting ? sprintSpeed : walkSpeed;
         _controller.Move(move * currentSpeed * Time.deltaTime);
+
+        float animSpeed = moveValue.magnitude > 0.1f ? (isSprinting ? 1f : 0.5f) : 0f;
+        if (networkMoveSpeed.Value != animSpeed)
+            networkMoveSpeed.Value = animSpeed;
+        if (_animator) _animator.SetFloat(AnimSpeed, animSpeed);
     }
 
     private void HandleJump()
