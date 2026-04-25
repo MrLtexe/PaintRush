@@ -24,8 +24,8 @@ public class MainMenuUI : MonoBehaviour
     [SerializeField] private TMP_Text warningText;
     [SerializeField] private Button disconnectButton;
     [SerializeField] private Button startGameButton;
-    [SerializeField] private Button teamAButton;
-    [SerializeField] private Button teamBButton;
+    [SerializeField] private Button renkliTeamButton;
+    [SerializeField] private Button renksizTeamButton;
     [SerializeField] private TMP_Text playerListText;
 
     [Header("Oyun sahnesi")]
@@ -46,8 +46,8 @@ public class MainMenuUI : MonoBehaviour
         disconnectButton.onClick.AddListener(OnDisconnectClicked);
         startGameButton.onClick.AddListener(OnStartGameClicked);
         
-        if (teamAButton) teamAButton.onClick.AddListener(() => OnTeamClicked(1));
-        if (teamBButton) teamBButton.onClick.AddListener(() => OnTeamClicked(2));
+        if (renkliTeamButton) renkliTeamButton.onClick.AddListener(() => OnTeamClicked(1));
+        if (renksizTeamButton) renksizTeamButton.onClick.AddListener(() => OnTeamClicked(2));
         
         ShowMenu();
     }
@@ -143,7 +143,7 @@ public class MainMenuUI : MonoBehaviour
         if (NetworkLobbyManager.Instance != null)
         {
             NetworkLobbyManager.Instance.SelectTeamRpc(teamId);
-            string teamName = teamId == 1 ? "A Takımı" : "B Takımı";
+            string teamName = teamId == 1 ? "Renkli Takım" : "Renksiz Takım";
             SetStatus($"{teamName} seçildi.");
         }
     }
@@ -303,7 +303,7 @@ public class MainMenuUI : MonoBehaviour
         string list = "Oyuncu Listesi:\n\n";
         foreach (var player in NetworkLobbyManager.Instance.LobbyPlayers)
         {
-            string teamName = player.TeamId == 1 ? "<color=#FF5555>A Takımı</color>" : (player.TeamId == 2 ? "<color=#5555FF>B Takımı</color>" : "<color=#AAAAAA>Seçim Yapmadı</color>");
+            string teamName = player.TeamId == 1 ? "<color=#FF5555>Renkli Takım</color>" : (player.TeamId == 2 ? "<color=#5555FF>Renksiz Takım</color>" : "<color=#AAAAAA>Seçim Yapmadı</color>");
             list += $"{player.PlayerName} - {teamName}\n";
         }
         playerListText.text = list;

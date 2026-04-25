@@ -8,7 +8,7 @@ public struct LobbyPlayerState : INetworkSerializable, IEquatable<LobbyPlayerSta
 {
     public ulong ClientId;
     public FixedString32Bytes PlayerName; // Ağ dostu string tipi
-    public int TeamId; // 0: Tarafsız, 1: A Takımı, 2: B Takımı
+    public int TeamId; // 0: Tarafsız, 1: Renkli Takım, 2: Renksiz Takım
 
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
@@ -118,8 +118,8 @@ public class NetworkLobbyManager : NetworkBehaviour
         errorMessage = "";
         if (LobbyPlayers.Count == 0) return false;
 
-        int teamA_Count = 0;
-        int teamB_Count = 0;
+        int renkliCount = 0;
+        int renksizCount = 0;
 
         foreach (var player in LobbyPlayers)
         {
@@ -129,11 +129,11 @@ public class NetworkLobbyManager : NetworkBehaviour
                 return false;
             }
             
-            if (player.TeamId == 1) teamA_Count++;
-            else if (player.TeamId == 2) teamB_Count++;
+            if (player.TeamId == 1) renkliCount++;
+            else if (player.TeamId == 2) renksizCount++;
         }
 
-        if (teamA_Count != teamB_Count)
+        if (renkliCount != renksizCount)
         {
             errorMessage = "Takımlar eşit sayıda olmalı!";
             return false;

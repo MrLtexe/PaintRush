@@ -10,8 +10,8 @@ public class GameUIManager : MonoBehaviour
 
     [Header("UI Elementleri")]
     [SerializeField] private TMP_Text timerText;
-    [SerializeField] private TMP_Text teamAScoreText;
-    [SerializeField] private TMP_Text teamBScoreText;
+    [SerializeField] private TMP_Text renkliTeamScoreText;
+    [SerializeField] private TMP_Text renksizTeamScoreText;
     [SerializeField] private TMP_Text phaseText;
     [SerializeField] private TMP_Text switchesText;
     [SerializeField] private TMP_Text healthText;
@@ -46,11 +46,11 @@ public class GameUIManager : MonoBehaviour
             timerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
 
         // 2. Skorları Güncelle
-        if (teamAScoreText) 
-            teamAScoreText.text = GameManager.Instance.TeamAScore.Value.ToString();
+        if (renkliTeamScoreText) 
+            renkliTeamScoreText.text = GameManager.Instance.RenkliTeamScore.Value.ToString();
             
-        if (teamBScoreText) 
-            teamBScoreText.text = GameManager.Instance.TeamBScore.Value.ToString();
+        if (renksizTeamScoreText) 
+            renksizTeamScoreText.text = GameManager.Instance.RenksizTeamScore.Value.ToString();
 
         // 3. Aşama (State) İsmini Güncelle
         if (phaseText) 

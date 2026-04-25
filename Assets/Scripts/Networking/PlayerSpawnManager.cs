@@ -6,10 +6,10 @@ public class PlayerSpawnManager : NetworkBehaviour
 {
     public static PlayerSpawnManager Instance { get; private set; }
 
-    [SerializeField] private GameObject teamAPrefab;
-    [SerializeField] private GameObject teamBPrefab;
-    [SerializeField] private Transform teamASpawnParent; // child: 1, 2
-    [SerializeField] private Transform teamBSpawnParent; // child: 1, 2
+    [SerializeField] private GameObject renkliTeamPrefab;
+    [SerializeField] private GameObject renksizTeamPrefab;
+    [SerializeField] private Transform renkliTeamSpawnParent; // child: 1, 2
+    [SerializeField] private Transform renksizTeamSpawnParent; // child: 1, 2
 
     private void Awake()
     {
@@ -25,12 +25,12 @@ public class PlayerSpawnManager : NetworkBehaviour
 
     private void SpawnAllPlayers()
     {
-        var teamASpawns = GetChildren(teamASpawnParent);
-        var teamBSpawns = GetChildren(teamBSpawnParent);
-        Shuffle(teamASpawns);
-        Shuffle(teamBSpawns);
+        var renkliSpawns = GetChildren(renkliTeamSpawnParent);
+        var renksizSpawns = GetChildren(renksizTeamSpawnParent);
+        Shuffle(renkliSpawns);
+        Shuffle(renksizSpawns);
 
-        int aIdx = 0, bIdx = 0;
+        int rIdx = 0, rsIdx = 0;
 
         foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
         {
@@ -41,25 +41,25 @@ public class PlayerSpawnManager : NetworkBehaviour
 
             if (team == 2)
             {
-                prefab = teamBPrefab;
-                if (teamBSpawns.Count > 0)
+                prefab = renksizTeamPrefab;
+                if (renksizSpawns.Count > 0)
                 {
-                    var spawn = teamBSpawns[bIdx % teamBSpawns.Count];
+                    var spawn = renksizSpawns[rsIdx % renksizSpawns.Count];
                     spawnPos = spawn.position;
                     spawnRot = spawn.rotation;
                 }
-                bIdx++;
+                rsIdx++;
             }
             else
             {
-                prefab = teamAPrefab;
-                if (teamASpawns.Count > 0)
+                prefab = renkliTeamPrefab;
+                if (renkliSpawns.Count > 0)
                 {
-                    var spawn = teamASpawns[aIdx % teamASpawns.Count];
+                    var spawn = renkliSpawns[rIdx % renkliSpawns.Count];
                     spawnPos = spawn.position;
                     spawnRot = spawn.rotation;
                 }
-                aIdx++;
+                rIdx++;
             }
 
             var go = Instantiate(prefab, spawnPos, spawnRot);
@@ -107,7 +107,7 @@ public class PlayerSpawnManager : NetworkBehaviour
     // GameManager'ın ölen oyuncuyu doğru noktada doğurabilmesi için
     public (Vector3 position, Quaternion rotation) GetRandomSpawnPoint(int teamId)
     {
-        var spawns = teamId == 2 ? GetChildren(teamBSpawnParent) : GetChildren(teamASpawnParent);
+        var spawns = teamId == 2 ? GetChildren(renksizTeamSpawnParent) : GetChildren(renkliTeamSpawnParent);
         if (spawns.Count == 0) return (Vector3.zero, Quaternion.identity);
         
         Transform spawn = spawns[Random.Range(0, spawns.Count)];

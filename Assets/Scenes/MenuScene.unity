@@ -1833,7 +1833,7 @@ GameObject:
   - component: {fileID: 1132877166}
   - component: {fileID: 1132877165}
   m_Layer: 5
-  m_Name: TeamBButton
+  m_Name: "RenksizTak\u0131m"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2289,7 +2289,7 @@ GameObject:
   - component: {fileID: 1296446941}
   - component: {fileID: 1296446940}
   m_Layer: 5
-  m_Name: TeamAButton
+  m_Name: "RenkliTak\u0131m"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3806,8 +3806,8 @@ MonoBehaviour:
   warningText: {fileID: 1350138506}
   disconnectButton: {fileID: 1030948689}
   startGameButton: {fileID: 1799220504}
-  teamAButton: {fileID: 1296446940}
-  teamBButton: {fileID: 1132877165}
+  renkliTeamButton: {fileID: 1296446940}
+  renksizTeamButton: {fileID: 1132877165}
   playerListText: {fileID: 1483580699}
   gameSceneName: GameScene
 --- !u!1660057539 &9223372036854775807

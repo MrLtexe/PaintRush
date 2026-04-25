@@ -36,8 +36,8 @@ public class GameManager : NetworkBehaviour
     public const int ScoreToWin = 3;
 
     [Header("Skor Tablosu")]
-    public NetworkVariable<int> TeamAScore = new NetworkVariable<int>(0);
-    public NetworkVariable<int> TeamBScore = new NetworkVariable<int>(0);
+    public NetworkVariable<int> RenkliTeamScore = new NetworkVariable<int>(0);
+    public NetworkVariable<int> RenksizTeamScore = new NetworkVariable<int>(0);
 
     private void Awake()
     {
@@ -85,17 +85,17 @@ public class GameManager : NetworkBehaviour
                 break;
                 
             case GameState.ObjectivePhase:
-                // 90 sn bitti ve A takımı switchleri açamadı -> B takımı kazandı
+                // 90 sn bitti ve Renkli takım switchleri açamadı -> Renksiz takım kazandı
                 EndRound(2);
                 break;
                 
             case GameState.TransitionPhase:
-                // 3 sn ışınlanma arası bitti -> Bomba sayacı başlar
+                // 3 sn ışınlanma arası bitti -> Bomba sayacı başlar (Renkli takım bombayı kurmuş sayılır)
                 ChangeState(GameState.DefusePhase, defuseDuration);
                 break;
                 
             case GameState.DefusePhase:
-                // 40 sn bitti ve B takımı bombayı imha edemedi -> Bomba patlar, A takımı kazandı
+                // 40 sn bitti ve Renksiz takım bombayı imha edemedi -> Bomba patlar, Renkli takım kazandı
                 EndRound(1);
                 break;
                 
@@ -130,7 +130,20 @@ public class GameManager : NetworkBehaviour
             }
         }
 
-        // TODO: Şalterleri sıfırla
+        // Şalterleri sıfırla
+        InteractableSwitch[] switches = FindObjectsByType<InteractableSwitch>(FindObjectsSortMode.None);
+        foreach (var sw in switches)
+        {
+            if (sw != null) sw.ResetSwitch();
+        }
+
+        // Bombayı sıfırla (Renksiz takım önceki raundda imha ettiyse tekrar kurulu hale gelsin)
+        BombController[] bombs = FindObjectsByType<BombController>(FindObjectsSortMode.None);
+        foreach (var bomb in bombs)
+        {
+            if (bomb != null) bomb.ResetBomb();
+        }
+
         ChangeState(GameState.PreRound, preRoundDuration);
     }
 
@@ -170,12 +183,12 @@ public class GameManager : NetworkBehaviour
 
     public void EndRound(int winnerTeamId)
     {
-        Debug.Log($"[GameManager] Raund bitti. Kazanan Takım: {(winnerTeamId == 1 ? "A Takımı" : "B Takımı")}");
+        Debug.Log($"[GameManager] Raund bitti. Kazanan Takım: {(winnerTeamId == 1 ? "Renkli Takım" : "Renksiz Takım")}");
         
-        if (winnerTeamId == 1) TeamAScore.Value++;
-        else if (winnerTeamId == 2) TeamBScore.Value++;
+        if (winnerTeamId == 1) RenkliTeamScore.Value++;
+        else if (winnerTeamId == 2) RenksizTeamScore.Value++;
 
-        if (TeamAScore.Value >= ScoreToWin || TeamBScore.Value >= ScoreToWin)
+        if (RenkliTeamScore.Value >= ScoreToWin || RenksizTeamScore.Value >= ScoreToWin)
         {
             CurrentState.Value = GameState.MatchEnd;
             Debug.Log("[GameManager] MAÇ BİTTİ!");
@@ -193,7 +206,7 @@ public class GameManager : NetworkBehaviour
         if (!IsServer) return;
 
         int teamId = victim.GetTeam();
-        Debug.Log($"[GameManager] Oyuncu öldü. Takım: {(teamId == 1 ? "A" : "B")} | Aşama: {CurrentState.Value}");
+        Debug.Log($"[GameManager] Oyuncu öldü. Takım: {(teamId == 1 ? "Renkli" : "Renksiz")} | Aşama: {CurrentState.Value}");
 
         if (CurrentState.Value == GameState.ObjectivePhase)
         {
@@ -202,8 +215,8 @@ public class GameManager : NetworkBehaviour
         }
         else if (CurrentState.Value == GameState.DefusePhase)
         {
-            // Kalıcı ölüm evresi: B takımı tamamen öldü mü kontrol et
-            if (teamId == 2) CheckTeamBWipeout();
+            // Kalıcı ölüm evresi: Renksiz takım tamamen öldü mü kontrol et
+            if (teamId == 2) CheckRenksizTeamWipeout();
         }
     }
 
@@ -223,24 +236,24 @@ public class GameManager : NetworkBehaviour
         }
     }
 
-    private void CheckTeamBWipeout()
+    private void CheckRenksizTeamWipeout()
     {
         PlayerHealth[] allPlayers = FindObjectsByType<PlayerHealth>(FindObjectsSortMode.None);
-        bool isAnyBAlive = false;
+        bool isAnyRenksizAlive = false;
 
         foreach (var player in allPlayers)
         {
             if (player.GetTeam() == 2 && !player.isDead.Value)
             {
-                isAnyBAlive = true;
+                isAnyRenksizAlive = true;
                 break;
             }
         }
 
-        if (!isAnyBAlive)
+        if (!isAnyRenksizAlive)
         {
-            Debug.Log("[GameManager] B Takımının tamamı öldü! A Takımı kazanıyor.");
-            EndRound(1); // 1: A Takımı
+            Debug.Log("[GameManager] Renksiz Takımın tamamı öldü! Renkli Takım kazanıyor.");
+            EndRound(1); // 1: Renkli Takım
         }
     }
 }

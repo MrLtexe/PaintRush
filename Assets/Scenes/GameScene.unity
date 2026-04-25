@@ -539,7 +539,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 594ea882c5a793440b60ff72d896021e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1304,7 +1304,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 594ea882c5a793440b60ff72d896021e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1682,10 +1682,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  teamAPrefab: {fileID: 164520722798203541, guid: 71a3b671fe61b514aa85417825f0a9ca, type: 3}
-  teamBPrefab: {fileID: 164520722798203541, guid: 36e7d67ff30a0bb43aa79321c3d6aa8c, type: 3}
-  teamASpawnParent: {fileID: 2045143134}
-  teamBSpawnParent: {fileID: 1981742211}
+  renkliTeamPrefab: {fileID: 164520722798203541, guid: 71a3b671fe61b514aa85417825f0a9ca, type: 3}
+  renksizTeamPrefab: {fileID: 164520722798203541, guid: 36e7d67ff30a0bb43aa79321c3d6aa8c, type: 3}
+  renkliTeamSpawnParent: {fileID: 1981742211}
+  renksizTeamSpawnParent: {fileID: 2045143134}
 --- !u!4 &895820586
 Transform:
   m_ObjectHideFlags: 0
@@ -1861,12 +1861,12 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 0
-  TeamAScore:
+  RenkliTeamScore:
     UpdateTraits:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 0
-  TeamBScore:
+  RenksizTeamScore:
     UpdateTraits:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
@@ -1884,8 +1884,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   timerText: {fileID: 291063381}
-  teamAScoreText: {fileID: 2071951269}
-  teamBScoreText: {fileID: 2111351546}
+  renkliTeamScoreText: {fileID: 2071951269}
+  renksizTeamScoreText: {fileID: 2111351546}
   phaseText: {fileID: 1729598823}
   switchesText: {fileID: 407244177}
   healthText: {fileID: 113909188}
@@ -2735,7 +2735,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 594ea882c5a793440b60ff72d896021e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2840,7 +2840,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1981742211}
   m_Layer: 0
-  m_Name: TeamBSpawn
+  m_Name: RenklilerSpawn
   m_TagString: Untagged
   m_Icon: {fileID: 5132851093641282708, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
@@ -2904,7 +2904,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2045143134}
   m_Layer: 0
-  m_Name: TeamASpawn
+  m_Name: RenksizlerSpawn
   m_TagString: Untagged
   m_Icon: {fileID: 5132851093641282708, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
@@ -2939,7 +2939,7 @@ GameObject:
   - component: {fileID: 2071951270}
   - component: {fileID: 2071951269}
   m_Layer: 5
-  m_Name: ScoreA
+  m_Name: ScoreRenkli
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3112,7 +3112,7 @@ GameObject:
   - component: {fileID: 2111351547}
   - component: {fileID: 2111351546}
   m_Layer: 5
-  m_Name: ScoreB
+  m_Name: ScoreRenksiz
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

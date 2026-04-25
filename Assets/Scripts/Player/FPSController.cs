@@ -325,15 +325,15 @@ public class FPSController : NetworkBehaviour
             {
                 if (hit.collider.TryGetComponent(out InteractableSwitch sw))
                 {
-                    // Şalter zaten açılmadıysa ve bir başkası şu an açmıyorsa
-                    if (!sw.isActivated.Value && !sw.isBeingInteracted.Value)
+                    // Sadece Renkli Takım (1) açabilir, şalter zaten açılmadıysa ve bir başkası şu an açmıyorsa
+                    if (GetMyTeam() == 1 && !sw.isActivated.Value && !sw.isBeingInteracted.Value)
                     {
                         StartInteraction(sw);
                     }
                 }
                 else if (hit.collider.TryGetComponent(out BombController bomb))
                 {
-                    // Sadece B Takımı çözebilir, çözülmediyse ve Defuse evresindeysek
+                    // Sadece Renksiz Takım çözebilir, çözülmediyse ve Defuse evresindeysek
                     if (GetMyTeam() == 2 && !bomb.isDefused.Value && !bomb.isBeingDefused.Value && GameManager.Instance.CurrentState.Value == GameState.DefusePhase)
                     {
                         StartBombInteraction(bomb);

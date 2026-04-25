@@ -27,8 +27,8 @@ public class BombController : NetworkBehaviour
             isDefused.Value = true;
             isBeingDefused.Value = false;
             
-            GameManager.Instance.EndRound(2); // 2: B Takımı kazanır
-            Debug.Log("Bomba imha edildi! B Takımı raundu kazanıyor.");
+            GameManager.Instance.EndRound(2); // 2: Renksiz Takım kazanır
+            Debug.Log("Bomba imha edildi! Renksiz Takım raundu kazanıyor.");
         }
     }
 
