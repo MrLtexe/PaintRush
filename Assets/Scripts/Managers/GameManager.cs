@@ -165,18 +165,17 @@ public class GameManager : NetworkBehaviour
     {
         if (CurrentState.Value == GameState.ObjectivePhase)
         {
-            // Yeni evreye (Defuse) geçmeden hemen önce, ölü olan oyuncuları bekletmeden anında dirilt
+            // Yeni evreye (Defuse) geçmeden hemen önce, bütün oyuncuları (ölü/diri) ışınla ve canlarını fulle
             PlayerHealth[] allPlayers = FindObjectsByType<PlayerHealth>(FindObjectsSortMode.None);
             foreach (var player in allPlayers)
             {
-                if (player != null && player.isDead.Value)
+                if (player != null)
                 {
                     var (pos, rot) = PlayerSpawnManager.Instance.GetRandomSpawnPoint(player.GetTeam());
-                    player.Respawn(pos, rot);
+                    player.Respawn(pos, rot); // isDead'i false yapar, canı 100'ler ve ışınlar
                 }
             }
 
-            // TODO: İkincil noktalara ışınla
             ChangeState(GameState.TransitionPhase, transitionDuration);
         }
     }
