@@ -1599,8 +1599,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  teamAPrefab: {fileID: 164520722798203541, guid: 36e7d67ff30a0bb43aa79321c3d6aa8c, type: 3}
-  teamBPrefab: {fileID: 164520722798203541, guid: b647129c982131247b60c6d6702758dd, type: 3}
+  teamAPrefab: {fileID: 164520722798203541, guid: 71a3b671fe61b514aa85417825f0a9ca, type: 3}
+  teamBPrefab: {fileID: 164520722798203541, guid: 36e7d67ff30a0bb43aa79321c3d6aa8c, type: 3}
   teamASpawnParent: {fileID: 2045143134}
   teamBSpawnParent: {fileID: 1981742211}
 --- !u!4 &895820586
