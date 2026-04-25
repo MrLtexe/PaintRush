@@ -119,7 +119,17 @@ public class GameManager : NetworkBehaviour
     {
         ActivatedSwitches.Value = 0;
         
-        // TODO: Haritayı temizle, oyuncuları başlangıç noktalarına ışınla
+        // Yeni Raund Başlangıcı: Bütün oyuncuları başlangıç noktalarına ışınla (Ölüyse dirilir, canları dolar)
+        PlayerHealth[] allPlayers = FindObjectsByType<PlayerHealth>(FindObjectsSortMode.None);
+        foreach (var player in allPlayers)
+        {
+            if (player != null)
+            {
+                var (pos, rot) = PlayerSpawnManager.Instance.GetRandomSpawnPoint(player.GetTeam());
+                player.Respawn(pos, rot); 
+            }
+        }
+
         // TODO: Şalterleri sıfırla
         ChangeState(GameState.PreRound, preRoundDuration);
     }
@@ -142,6 +152,17 @@ public class GameManager : NetworkBehaviour
     {
         if (CurrentState.Value == GameState.ObjectivePhase)
         {
+            // Yeni evreye (Defuse) geçmeden hemen önce, ölü olan oyuncuları bekletmeden anında dirilt
+            PlayerHealth[] allPlayers = FindObjectsByType<PlayerHealth>(FindObjectsSortMode.None);
+            foreach (var player in allPlayers)
+            {
+                if (player != null && player.isDead.Value)
+                {
+                    var (pos, rot) = PlayerSpawnManager.Instance.GetRandomSpawnPoint(player.GetTeam());
+                    player.Respawn(pos, rot);
+                }
+            }
+
             // TODO: İkincil noktalara ışınla
             ChangeState(GameState.TransitionPhase, transitionDuration);
         }
@@ -191,8 +212,11 @@ public class GameManager : NetworkBehaviour
         yield return new WaitForSeconds(delay);
         if (victim == null || !victim.IsSpawned) yield break;
 
-        // Raund aniden biterse (biri kazanırsa) havada doğurmamak için kontrol ediyoruz
-        if (CurrentState.Value == GameState.ObjectivePhase)
+        // Geçiş aşamasında oyuncu topluca (otomatik) diriltildiyse (isDead = false) tekrar ışınlama yapma
+        if (!victim.isDead.Value) yield break;
+
+        // Objective veya Transition evresindeysek normal bir şekilde doğmaya izin ver
+        if (CurrentState.Value == GameState.ObjectivePhase || CurrentState.Value == GameState.TransitionPhase)
         {
             var (pos, rot) = PlayerSpawnManager.Instance.GetRandomSpawnPoint(victim.GetTeam());
             victim.Respawn(pos, rot);
