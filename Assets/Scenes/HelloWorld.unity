@@ -1600,7 +1600,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   teamAPrefab: {fileID: 164520722798203541, guid: 36e7d67ff30a0bb43aa79321c3d6aa8c, type: 3}
-  teamBPrefab: {fileID: 807616505861138379, guid: ad24b2f450528934aa52123e7d83732c, type: 3}
+  teamBPrefab: {fileID: 164520722798203541, guid: 6a8c1c356a7990143aa1e5c11024a4d0, type: 3}
   teamASpawnParent: {fileID: 2045143134}
   teamBSpawnParent: {fileID: 1981742211}
 --- !u!4 &895820586
