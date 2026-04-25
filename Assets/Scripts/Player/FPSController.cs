@@ -47,12 +47,14 @@ public class FPSController : NetworkBehaviour
 
     [Header("Animasyon")]
     [SerializeField] private Animator _animator;
-    private static readonly int AnimSpeed = Animator.StringToHash("Speed");
+    private static readonly int AnimVelX = Animator.StringToHash("VelocityX");
+    private static readonly int AnimVelZ = Animator.StringToHash("VelocityZ");
 
     [Header("Ağ Senkronizasyonu")]
     public NetworkVariable<float> networkViewPitch = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<int> networkWeaponIndex = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
-    public NetworkVariable<float> networkMoveSpeed = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    public NetworkVariable<float> networkVelocityX = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    public NetworkVariable<float> networkVelocityZ = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
     [Header("Geri Tepme (Recoil) Ayarları")]
     public float recoilKickDuration = 0.05f; // Sarsıntının ne kadar hızlı vuracağı
@@ -104,8 +106,13 @@ public class FPSController : NetworkBehaviour
 
             // Yeni açı değerini sadece değiştiğinde dinle
             networkViewPitch.OnValueChanged += OnPitchChanged;
-            networkMoveSpeed.OnValueChanged += OnMoveSpeedChanged;
-            if (_animator) _animator.SetFloat(AnimSpeed, networkMoveSpeed.Value);
+            networkVelocityX.OnValueChanged += (_, v) => { if (_animator) _animator.SetFloat(AnimVelX, v); };
+            networkVelocityZ.OnValueChanged += (_, v) => { if (_animator) _animator.SetFloat(AnimVelZ, v); };
+            if (_animator)
+            {
+                _animator.SetFloat(AnimVelX, networkVelocityX.Value);
+                _animator.SetFloat(AnimVelZ, networkVelocityZ.Value);
+            }
             return;
         }
 
@@ -122,11 +129,6 @@ public class FPSController : NetworkBehaviour
         {
             _health.currentHealth.OnValueChanged += OnHealthChanged;
         }
-    }
-
-    private void OnMoveSpeedChanged(float previousValue, float newValue)
-    {
-        if (_animator) _animator.SetFloat(AnimSpeed, newValue);
     }
 
     private void OnPitchChanged(float previousValue, float newValue)
@@ -164,7 +166,6 @@ public class FPSController : NetworkBehaviour
         else
         {
             networkViewPitch.OnValueChanged -= OnPitchChanged;
-            networkMoveSpeed.OnValueChanged -= OnMoveSpeedChanged;
         }
     }
 
@@ -247,10 +248,17 @@ public class FPSController : NetworkBehaviour
         float currentSpeed = isSprinting ? sprintSpeed : walkSpeed;
         _controller.Move(move * currentSpeed * Time.deltaTime);
 
-        float animSpeed = moveValue.magnitude > 0.1f ? (isSprinting ? 1f : 0.5f) : 0f;
-        if (networkMoveSpeed.Value != animSpeed)
-            networkMoveSpeed.Value = animSpeed;
-        if (_animator) _animator.SetFloat(AnimSpeed, animSpeed);
+        float scale = moveValue.magnitude > 0.1f ? (isSprinting ? 1f : 0.5f) : 0f;
+        float velX = moveValue.x * scale;
+        float velZ = moveValue.y * scale;
+
+        if (networkVelocityX.Value != velX) networkVelocityX.Value = velX;
+        if (networkVelocityZ.Value != velZ) networkVelocityZ.Value = velZ;
+        if (_animator)
+        {
+            _animator.SetFloat(AnimVelX, velX);
+            _animator.SetFloat(AnimVelZ, velZ);
+        }
     }
 
     private void HandleJump()
