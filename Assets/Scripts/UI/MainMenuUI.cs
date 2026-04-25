@@ -20,6 +20,8 @@ public class MainMenuUI : MonoBehaviour
     [Header("Lobby")]
     [SerializeField] private TMP_Text playerCountText;
     [SerializeField] private TMP_Text statusText;
+    [SerializeField] private TMP_Text lobbyCodeText;
+    [SerializeField] private TMP_Text warningText;
     [SerializeField] private Button disconnectButton;
     [SerializeField] private Button startGameButton;
     [SerializeField] private Button teamAButton;
@@ -76,19 +78,19 @@ public class MainMenuUI : MonoBehaviour
             
             if (string.IsNullOrEmpty(code))
             {
-                SetStatus("Host başlatılamadı. Lütfen tekrar deneyin.");
+                SetWarning("Host başlatılamadı. Lütfen tekrar deneyin.");
                 SetButtons(true);
                 return;
             }
 
             ShowLobby();
-            SetStatus($"Kod: {code}");
+            SetLobbyCode($"Kod: {code}");
             UpdatePlayerCount();
             startGameButton.gameObject.SetActive(true);
         }
         catch (System.Exception e)
         {
-            SetStatus($"Hata: {e.Message}");
+            SetWarning($"Hata: {e.Message}");
             SetButtons(true);
         }
     }
@@ -98,7 +100,7 @@ public class MainMenuUI : MonoBehaviour
         string code = joinCodeInputField.text.Trim().ToUpper();
         if (string.IsNullOrEmpty(code))
         {
-            SetStatus("Join kodu gir!");
+            SetWarning("Join kodu gir!");
             return;
         }
 
@@ -119,7 +121,7 @@ public class MainMenuUI : MonoBehaviour
         }
         catch (System.Exception e)
         {
-            SetStatus($"Hata: {e.Message}");
+            SetWarning($"Hata: {e.Message}");
             SetButtons(true);
         }
     }
@@ -131,7 +133,7 @@ public class MainMenuUI : MonoBehaviour
         {
             _bootstrap.Disconnect();
             yield return new WaitUntil(() => !NetworkManager.Singleton.IsListening);
-            SetStatus("Bağlantı başarısız. Kodu kontrol et.");
+            SetWarning("Bağlantı başarısız. Kodu kontrol et.");
             SetButtons(true);
         }
     }
@@ -152,7 +154,7 @@ public class MainMenuUI : MonoBehaviour
         
         if (NetworkLobbyManager.Instance != null && !NetworkLobbyManager.Instance.CanStartGame(out string errorMessage))
         {
-            SetStatus(errorMessage);
+            SetWarning(errorMessage);
             return;
         }
         
@@ -201,7 +203,7 @@ public class MainMenuUI : MonoBehaviour
             {
                 ShowLobby();
                 startGameButton.gameObject.SetActive(false);
-                SetStatus("Host oyunu başlatana kadar bekle...");
+                SetWarning("Host oyunu başlatana kadar bekle...");
             }
         }
     }
@@ -283,6 +285,15 @@ public class MainMenuUI : MonoBehaviour
     private void OnLobbyPlayersChanged(NetworkListEvent<LobbyPlayerState> changeEvent)
     {
         UpdatePlayerListUI();
+
+        if (changeEvent.Type == NetworkListEvent<LobbyPlayerState>.EventType.Add)
+        {
+            SetStatus($"{changeEvent.Value.PlayerName} bağlandı.");
+        }
+        else if (changeEvent.Type == NetworkListEvent<LobbyPlayerState>.EventType.Remove)
+        {
+            SetStatus($"{changeEvent.Value.PlayerName} ayrıldı.");
+        }
     }
 
     private void UpdatePlayerListUI()
@@ -315,6 +326,17 @@ public class MainMenuUI : MonoBehaviour
     {
         if (statusText) statusText.text = msg;
         if (!string.IsNullOrEmpty(msg)) Debug.Log($"[Menu] {msg}");
+    }
+
+    private void SetWarning(string msg)
+    {
+        if (warningText) warningText.text = msg;
+        if (!string.IsNullOrEmpty(msg)) Debug.LogWarning($"[Menu] {msg}");
+    }
+
+    private void SetLobbyCode(string code)
+    {
+        if (lobbyCodeText) lobbyCodeText.text = $"{code}";
     }
 
     private void SetButtons(bool interactable)
