@@ -86,6 +86,12 @@ public class FPSController : NetworkBehaviour
         networkWeaponIndex.OnValueChanged += OnWeaponChanged;
         ApplyWeaponVisuals(networkWeaponIndex.Value); // Herkes diğer oyuncuların güncel silahını görebilsin
 
+        if (_health != null)
+        {
+            // Ölüm/Dirilme anındaki görsel ve çarpışma değişikliklerini HERKES dinler
+            _health.isDead.OnValueChanged += OnPlayerDeathStateChanged;
+        }
+
         if (!IsOwner)
         {
             // Objenin kendini kapatmak yerine sadece Görüntü ve Ses dinleyiciyi kapatıyoruz.
@@ -134,6 +140,38 @@ public class FPSController : NetworkBehaviour
         }
     }
 
+    private void OnPlayerDeathStateChanged(bool previous, bool current)
+    {
+        if (current)
+        {
+            // 1. Ölüm animasyonunu başlat
+            if (_animator) _animator.SetBool("IsDead", true);
+
+            // 2. Mermilerin cesede çarpıp görünmez duvara takılmaması için tüm çarpıştırıcıları kapat
+            if (_controller != null) _controller.enabled = false;
+            foreach (var col in GetComponents<Collider>()) col.enabled = false;
+
+            // 3. Karakterin elindeki silahı gizle
+            ApplyWeaponVisuals(-1);
+        }
+        else
+        {
+            // YENİDEN DOĞMA (Dirilme) İşlemleri
+            if (_animator) _animator.SetBool("IsDead", false);
+            
+            ApplyWeaponVisuals(networkWeaponIndex.Value); // Silahı geri getir
+
+            if (IsOwner)
+            {
+                if (_controller != null) _controller.enabled = true;
+            }
+            else
+            {
+                foreach (var col in GetComponents<Collider>()) col.enabled = true; // Düşman hitbox'ını geri aç
+            }
+        }
+    }
+
     private void OnPitchChanged(float previousValue, float newValue)
     {
         if (playerCamera != null)
@@ -160,6 +198,7 @@ public class FPSController : NetworkBehaviour
     public override void OnNetworkDespawn()
     {
         networkWeaponIndex.OnValueChanged -= OnWeaponChanged;
+        if (_health != null) _health.isDead.OnValueChanged -= OnPlayerDeathStateChanged;
 
         if (IsOwner)
         {
@@ -478,7 +517,10 @@ public class FPSController : NetworkBehaviour
         // Sadece sahibi (Owner) konsol mesajını görsün
         if (IsOwner)
         {
-            Debug.Log(weapons[_currentWeaponIndex] != null ? $"{weapons[_currentWeaponIndex].weaponName} donanıldı." : "Silah donanıldı.");
+            if (_currentWeaponIndex >= 0 && _currentWeaponIndex < weapons.Length && weapons[_currentWeaponIndex] != null)
+            {
+                Debug.Log($"{weapons[_currentWeaponIndex].weaponName} donanıldı.");
+            }
         }
     }
 
