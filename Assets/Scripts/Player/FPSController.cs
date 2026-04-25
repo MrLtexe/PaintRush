@@ -100,7 +100,19 @@ public class FPSController : NetworkBehaviour
 
             // DİĞER OYUNCULAR İÇİN CHARACTER CONTROLLER'I KAPAT (Çarpışma ve fiziksel itme hatalarını engeller)
             var cc = GetComponent<CharacterController>();
-            if (cc != null) cc.enabled = false;
+            if (cc != null)
+            {
+                cc.enabled = false;
+
+                // DİKKAT: CC kapandığı için düşmanlar mermi algılayamaz duruma geldi.
+                // Bu yüzden mermilerin (Raycast) çarpabilmesi için yedek bir Hitbox ekliyoruz.
+                CapsuleCollider hitbox = gameObject.AddComponent<CapsuleCollider>();
+                hitbox.radius = cc.radius;
+                hitbox.height = cc.height;
+                hitbox.center = cc.center;
+                // isTrigger = true yapıyoruz ki oyuncular birbirine takılıp itmesin ama mermiler vursun
+                hitbox.isTrigger = true;
+            }
 
             // Yeni açı değerini sadece değiştiğinde dinle
             networkViewPitch.OnValueChanged += OnPitchChanged;

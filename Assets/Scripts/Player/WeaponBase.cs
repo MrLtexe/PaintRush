@@ -48,29 +48,37 @@ public abstract class WeaponBase : NetworkBehaviour
         Vector3 hitNormal = -ray.direction;
         bool spawnDecal = false;
         
-        if (Physics.Raycast(ray, out RaycastHit hit, range, shooter.shootLayer))
-        {
-            hitPoint = hit.point; // Gerçekte vurulan nokta
-            hitNormal = hit.normal; // Vurulan yüzeyin baktığı yön
-            spawnDecal = true; // Bir yüzeye çarptık, mermi izi çıkabilir
+        // Bütün çarpan objeleri al (Kendi karakterimize çarpıp merminin durmasını engellemek için)
+        RaycastHit[] hits = Physics.RaycastAll(ray, range, shooter.shootLayer);
+        
+        // Çarpan objeleri mesafeye göre yakından uzağa sırala
+        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
 
-            // Çarptığımız objede veya onun ebeveyn objelerinde (parent) PlayerHealth var mı?
+        foreach (var hit in hits)
+        {
             PlayerHealth targetHealth = hit.collider.GetComponentInParent<PlayerHealth>();
+
+            // Eğer mermi KENDİMİZE çarptıysa, görmezden gel ve arkaya gitmeye devam et
+            if (targetHealth != null && targetHealth.OwnerClientId == shooter.OwnerClientId)
+                continue; 
+
+            // Kendimiz haricinde İLK geçerli objeye çarptık (Duvar veya Düşman)
+            hitPoint = hit.point;
+            hitNormal = hit.normal;
+            spawnDecal = true;
+
             if (targetHealth != null)
             {
                 spawnDecal = false; // Vurduğumuz şey oyuncuysa duvar deliği çıkartma
 
-                // Kendi takım arkadaşımızı ve kendimizi vurmayı engelliyoruz
-                if (targetHealth.OwnerClientId != shooter.OwnerClientId && targetHealth.GetTeam() != shooter.GetMyTeam())
+                // Kendi takım arkadaşımızı vurmayı engelliyoruz
+                if (targetHealth.GetTeam() != shooter.GetMyTeam())
                 {
                     var targetNetObj = targetHealth.GetComponent<NetworkObject>();
-                    if (targetNetObj != null)
-                    {
-                        // Hasarı FPSController üzerinden sunucuya iletiyoruz
-                        shooter.HitPlayerRpc(targetNetObj.NetworkObjectId, damage);
-                    }
+                    if (targetNetObj != null) shooter.HitPlayerRpc(targetNetObj.NetworkObjectId, damage);
                 }
             }
+            break; // İlk hedefe (duvar veya düşman) çarptıktan sonra mermiyi durdur
         }
 
         // Editor üzerinde merminin nereye gittiğini görmek için Debug çizgisi (2 saniye ekranda kalır)
