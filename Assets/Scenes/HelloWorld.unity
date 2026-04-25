@@ -207,7 +207,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   teamAPrefab: {fileID: 7408026624150622618, guid: 974bc3d0394353449a92c6dd706c6d5d, type: 3}
-  teamBPrefab: {fileID: 5892295350349330644, guid: 68cfb7d47f88cd7458dc22f2a2e82d05, type: 3}
+  teamBPrefab: {fileID: 7408026624150622618, guid: 1a30777348dc02948b6d7767a372cf8e, type: 3}
   teamASpawnParent: {fileID: 2045143134}
   teamBSpawnParent: {fileID: 1981742211}
 --- !u!4 &895820586
@@ -511,7 +511,7 @@ Transform:
   m_GameObject: {fileID: 1981742210}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -3.81}
+  m_LocalPosition: {x: 0, y: 0.7, z: -3.81}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -575,7 +575,7 @@ Transform:
   m_GameObject: {fileID: 2045143133}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 4.25}
+  m_LocalPosition: {x: 0, y: 0.7, z: 4.25}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -619,7 +619,7 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 1758903548}
-  - {fileID: 895820586}
   - {fileID: 1809450523}
   - {fileID: 2045143134}
   - {fileID: 1981742211}
+  - {fileID: 895820586}
