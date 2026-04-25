@@ -206,10 +206,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  teamAPrefab: {fileID: 0}
-  teamBPrefab: {fileID: 0}
-  teamASpawnParent: {fileID: 0}
-  teamBSpawnParent: {fileID: 0}
+  teamAPrefab: {fileID: 3380946588016406392, guid: 7d6d092ad15e14a47909eb72f6be4aff, type: 3}
+  teamBPrefab: {fileID: 3380946588016406392, guid: 524ea51f9bd3d1b46bed83941e982fa5, type: 3}
+  teamASpawnParent: {fileID: 2045143134}
+  teamBSpawnParent: {fileID: 1981742211}
 --- !u!4 &895820586
 Transform:
   m_ObjectHideFlags: 0
