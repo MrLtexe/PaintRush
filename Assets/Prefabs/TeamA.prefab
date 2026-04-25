@@ -10757,13 +10757,13 @@ MonoBehaviour:
   interactRange: 3
   interactLayer:
     serializedVersion: 2
-    m_Bits: 65
+    m_Bits: 8
   weapons:
   - {fileID: 4237237363087291603}
   - {fileID: 6430615799717247695}
   shootLayer:
     serializedVersion: 2
-    m_Bits: 4294967232
+    m_Bits: 4294967233
   networkViewPitch:
     UpdateTraits:
       MinSecondsBetweenUpdates: 0
