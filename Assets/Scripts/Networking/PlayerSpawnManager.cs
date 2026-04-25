@@ -2,10 +2,6 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-/// <summary>
-/// GameScene'e boş bir GameObject ekle, bu script'i bağla.
-/// SpawnManager GameObject'ine NetworkObject component'i de ekle.
-/// </summary>
 public class PlayerSpawnManager : NetworkBehaviour
 {
     [SerializeField] private GameObject teamAPrefab;

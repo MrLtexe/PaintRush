@@ -30,10 +30,20 @@ public class FPSController : NetworkBehaviour
     [Tooltip("Input Asset'te Button tipinde '3' tuşuna atanmış aksiyon")]
     public InputActionReference flashbangInput;
 
+    [Header("Etkileşim (Interact) Ayarları")]
+    public InputActionReference interactInput;
+    public float interactRange = 3f;
+    public LayerMask interactLayer = Physics.DefaultRaycastLayers;
+
     private CharacterController _controller;
     private Vector3 _velocity;
     private bool _isGrounded;
     private float _xRotation = 0f;
+
+    private InteractableSwitch _currentSwitch;
+    private bool _isInteracting;
+    private float _interactTimer;
+    private PlayerHealth _health;
 
     // Silah Durumu (0: Tüfek, 1: Tabanca)
     private int _currentWeaponIndex = 0;
@@ -49,12 +59,28 @@ public class FPSController : NetworkBehaviour
         }
 
         _controller = GetComponent<CharacterController>();
+        _health = GetComponent<PlayerHealth>();
         
         // Fareyi ekrana kilitle ve gizle
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
         EnableInputs();
+
+        // Canımız azaldığında (hasar aldığımızda) etkileşimi iptal etmek için dinliyoruz
+        if (_health != null)
+        {
+            _health.currentHealth.OnValueChanged += OnHealthChanged;
+        }
+    }
+
+    private void OnHealthChanged(int previousValue, int newValue)
+    {
+        // Eğer can azaldıysa ve şalter açıyorsak iptal et
+        if (newValue < previousValue && _isInteracting)
+        {
+            CancelInteraction();
+        }
     }
 
     public override void OnNetworkDespawn()
@@ -62,6 +88,7 @@ public class FPSController : NetworkBehaviour
         if (IsOwner)
         {
             DisableInputs();
+            if (_health != null) _health.currentHealth.OnValueChanged -= OnHealthChanged;
         }
     }
 
@@ -76,11 +103,20 @@ public class FPSController : NetworkBehaviour
             _velocity.y = -2f; // Yerdeyken sürekli yapışık kalması için küçük bir aşağı kuvvet
         }
 
-        HandleLook();
-        HandleMovement();
-        HandleJump();
-        HandleWeapons();
-        HandleUtilities();
+        HandleLook(); // Etrafımıza bakabilmeliyiz
+
+        if (_isInteracting)
+        {
+            HandleInteracting(); // Sadece etkileşim sürecini işlet (hareket kilitli)
+        }
+        else
+        {
+            HandleMovement();
+            HandleJump();
+            HandleWeapons();
+            HandleUtilities();
+            CheckInteractable(); // Şalter var mı diye kontrol et
+        }
     }
 
     // ── HAREKET VE KAMERA ────────────────────────────────────────────────
@@ -124,6 +160,66 @@ public class FPSController : NetworkBehaviour
         // Yerçekimini uygula
         _velocity.y += gravity * Time.deltaTime;
         _controller.Move(_velocity * Time.deltaTime);
+    }
+
+    // ── ETKİLEŞİM (INTERACT) ─────────────────────────────────────────────
+
+    private void CheckInteractable()
+    {
+        if (interactInput != null && interactInput.action.WasPressedThisFrame())
+        {
+            Ray ray = new Ray(playerCamera.position, playerCamera.forward);
+            if (Physics.Raycast(ray, out RaycastHit hit, interactRange, interactLayer))
+            {
+                if (hit.collider.TryGetComponent(out InteractableSwitch sw))
+                {
+                    // Şalter zaten açılmadıysa ve bir başkası şu an açmıyorsa
+                    if (!sw.isActivated.Value && !sw.isBeingInteracted.Value)
+                    {
+                        StartInteraction(sw);
+                    }
+                }
+            }
+        }
+    }
+
+    private void StartInteraction(InteractableSwitch sw)
+    {
+        _currentSwitch = sw;
+        _isInteracting = true;
+        _interactTimer = 0f;
+        _currentSwitch.SetInteractingRpc(true); // Animasyonu başlat
+    }
+
+    private void HandleInteracting()
+    {
+        // Oyuncu tuşu bırakırsa veya hedeften uzağa/başka yöne bakarsa iptal et
+        Ray ray = new Ray(playerCamera.position, playerCamera.forward);
+        bool isLookingAtSwitch = Physics.Raycast(ray, out RaycastHit hit, interactRange, interactLayer) && hit.collider.gameObject == _currentSwitch.gameObject;
+
+        if (!interactInput.action.IsPressed() || !isLookingAtSwitch)
+        {
+            CancelInteraction();
+            return;
+        }
+
+        _interactTimer += Time.deltaTime;
+        if (_interactTimer >= _currentSwitch.interactDuration)
+        {
+            _currentSwitch.TryActivateRpc(); // Başarıyla tamamlandı
+            _isInteracting = false;
+            _currentSwitch = null;
+        }
+    }
+
+    private void CancelInteraction()
+    {
+        if (_isInteracting && _currentSwitch != null)
+        {
+            _currentSwitch.SetInteractingRpc(false); // Animasyonu iptal edip geri sar
+            _isInteracting = false;
+            _currentSwitch = null;
+        }
     }
 
     // ── SİLAH VE ÇATIŞMA ─────────────────────────────────────────────────
@@ -178,12 +274,14 @@ public class FPSController : NetworkBehaviour
         if (grenadeInput) grenadeInput.action.Enable();
         if (smokeInput) smokeInput.action.Enable();
         if (flashbangInput) flashbangInput.action.Enable();
+        if (interactInput) interactInput.action.Enable();
     }
 
     private void DisableInputs()
     {
         moveInput.action.Disable(); lookInput.action.Disable();
         attackInput.action.Disable(); sprintInput.action.Disable(); jumpInput.action.Disable();
+        if (interactInput) interactInput.action.Disable();
     }
     
 }
