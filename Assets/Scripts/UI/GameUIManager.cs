@@ -18,7 +18,7 @@ public class GameUIManager : MonoBehaviour
 
     [Header("Etkileşim (İlerleme) UI")]
     [SerializeField] private GameObject interactionPanel;
-    [SerializeField] private Image interactionProgressBar;
+    [SerializeField] private Slider interactionProgressBar;
     [SerializeField] private TMP_Text interactionText;
 
     [Header("Ölüm ve Yeniden Doğma UI")]
@@ -85,7 +85,7 @@ public class GameUIManager : MonoBehaviour
     {
         if (interactionPanel && !interactionPanel.activeSelf) interactionPanel.SetActive(true);
         if (interactionText) interactionText.text = message;
-        if (interactionProgressBar) interactionProgressBar.fillAmount = progress;
+        if (interactionProgressBar) interactionProgressBar.value = progress;
     }
 
     public void HideInteraction()
