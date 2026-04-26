@@ -87,7 +87,7 @@ public class GameUIManager : MonoBehaviour
 
     public void UpdateAmmoUI(int currentAmmo, int reserveAmmo)
     {
-        if (ammoText) ammoText.text = $"Mermi: {currentAmmo} / {reserveAmmo}";
+        if (ammoText) ammoText.text = $"{currentAmmo} / {reserveAmmo}";
     }
 
     public void ShowInteraction(string message, float progress)
@@ -104,7 +104,7 @@ public class GameUIManager : MonoBehaviour
 
     public void UpdateHealthUI(int currentHealth, int maxHealth = 100)
     {
-        if (healthText) healthText.text = $"Can: {currentHealth} / {maxHealth}";
+        if (healthText) healthText.text = $"{currentHealth} Hp";
     }
 
     public void ShowRespawnScreen(float duration)

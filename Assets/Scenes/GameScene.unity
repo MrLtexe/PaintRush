@@ -2082,7 +2082,7 @@ MonoBehaviour:
   phaseText: {fileID: 1729598823}
   switchesText: {fileID: 407244177}
   healthText: {fileID: 113909188}
-  ammoText: {fileID: 0}
+  ammoText: {fileID: 340626051}
   interactionPanel: {fileID: 807447075}
   interactionProgressBar: {fileID: 1644631688}
   interactionText: {fileID: 1835006894}

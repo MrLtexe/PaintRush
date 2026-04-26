@@ -114,6 +114,11 @@ MonoBehaviour:
   range: 0
   fireRate: 0
   isAutomatic: 0
+  maxAmmoPerMag: 0
+  currentAmmo: 0
+  reserveAmmo: 0
+  reloadTime: 0
+  isReloading: 0
   verticalRecoil: 2
   horizontalRecoil: 0.5
   barrelPoint: {fileID: 7102764925680326159}
@@ -328,6 +333,11 @@ MonoBehaviour:
   range: 0
   fireRate: 0
   isAutomatic: 0
+  maxAmmoPerMag: 0
+  currentAmmo: 0
+  reserveAmmo: 0
+  reloadTime: 0
+  isReloading: 0
   verticalRecoil: 2
   horizontalRecoil: 0.5
   barrelPoint: {fileID: 7818761739306187317}
@@ -10990,7 +11000,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: e73f1b6778930b643b021357b6ccc231, type: 3}
       propertyPath: m_Name
-      value: TeamB(1)
+      value: "RenksizTak\u0131m"
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: e73f1b6778930b643b021357b6ccc231, type: 3}
       propertyPath: m_Layer
@@ -11241,6 +11251,7 @@ MonoBehaviour:
   grenadeInput: {fileID: 4022643411803173953, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   smokeInput: {fileID: -8599810864785264912, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   flashbangInput: {fileID: 1390591555600227939, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  reloadInput: {fileID: 5252398372271851376, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   interactInput: {fileID: 1781555164194001046, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   interactRange: 3
   interactLayer:
@@ -11328,8 +11339,8 @@ MonoBehaviour:
       NameHash: 1962481246
       Synchronize: 1
       ParameterType: 1
-    - name: isDead
-      NameHash: 1276664872
+    - name: IsDead
+      NameHash: 1270110494
       Synchronize: 1
       ParameterType: 4
   AnimatorParametersExpanded: 0
