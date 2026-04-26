@@ -26,7 +26,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 4a119e3ed72661245a750c80dc8477a0, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -3.21
+      value: -3.4
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 4a119e3ed72661245a750c80dc8477a0, type: 3}
       propertyPath: m_LocalPosition.z
@@ -88,7 +88,7 @@ PrefabInstance:
       addedObject: {fileID: 815072863753301927}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 4a119e3ed72661245a750c80dc8477a0, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1505798988141930277}
+      addedObject: {fileID: 4290272425093246416}
   m_SourcePrefab: {fileID: 100100000, guid: 4a119e3ed72661245a750c80dc8477a0, type: 3}
 --- !u!1 &840498994997376344 stripped
 GameObject:
@@ -107,8 +107,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 2604157893
-  InScenePlacedSourceGlobalObjectIdHash: 0
+  GlobalObjectIdHash: 2505502904
+  InScenePlacedSourceGlobalObjectIdHash: 2456540485
   DeferredDespawnTick: 0
   Ownership: 1
   AlwaysReplicateAsRoot: 0
@@ -144,8 +144,8 @@ MonoBehaviour:
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 0
   defuseDuration: 7
---- !u!64 &1505798988141930277
-MeshCollider:
+--- !u!65 &4290272425093246416
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -162,7 +162,6 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -5371923118458101308, guid: 4a119e3ed72661245a750c80dc8477a0, type: 3}
+  serializedVersion: 3
+  m_Size: {x: 0.5709181, y: 1.0009927, z: 0.5709181}
+  m_Center: {x: 0, y: 0.5004963, z: 0}

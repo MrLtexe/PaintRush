@@ -8,7 +8,7 @@ public class InteractableSwitch : NetworkBehaviour
     public NetworkVariable<bool> isBeingInteracted = new NetworkVariable<bool>(false);
 
     [Header("Animasyon Ayarları")]
-    public Vector3 activeRotationOffset = new Vector3(90, 0, 0); // Şalterin açıldığında ne kadar döneceği
+    public Vector3 activeRotationOffset = new Vector3(0, 0, 90); // Şalterin açıldığında ne kadar döneceği
     public float interactDuration = 5f;
     private Vector3 _initialRotation;
 
