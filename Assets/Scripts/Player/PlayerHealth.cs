@@ -102,6 +102,8 @@ public class PlayerHealth : NetworkBehaviour
         transform.position = pos;
         transform.rotation = rot;
         if (cc != null) cc.enabled = true;
+
+        GetComponent<FPSController>()?.RefillAllAmmo();
     }
 
     public int GetTeam()

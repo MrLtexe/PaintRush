@@ -605,6 +605,18 @@ public class FPSController : NetworkBehaviour
         grenade.Launch(direction);
     }
 
+    public void RefillAllAmmo()
+    {
+        if (weapons == null) return;
+        foreach (var weapon in weapons)
+        {
+            if (weapon == null) continue;
+            weapon.Refill();
+        }
+        if (_currentWeaponIndex >= 0 && _currentWeaponIndex < weapons.Length && weapons[_currentWeaponIndex] != null)
+            weapons[_currentWeaponIndex].UpdateAmmoUI();
+    }
+
     // ── INPUT KONTROLLERİ ────────────────────────────────────────────────
 
     private void EnableInputs()

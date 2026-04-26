@@ -36,10 +36,21 @@ public abstract class WeaponBase : NetworkBehaviour
 
     private Coroutine _reloadCoroutine;
     private Vector3 _initialLocalRot;
+    private int _spawnAmmo;
+    private int _spawnReserve;
 
     private void Start()
     {
         _initialLocalRot = transform.localEulerAngles;
+        _spawnAmmo = currentAmmo;
+        _spawnReserve = reserveAmmo;
+    }
+
+    public void Refill()
+    {
+        CancelReload();
+        currentAmmo = _spawnAmmo;
+        reserveAmmo = _spawnReserve;
     }
 
     private void OnDisable()
