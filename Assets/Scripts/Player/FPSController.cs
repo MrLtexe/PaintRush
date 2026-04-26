@@ -42,6 +42,18 @@ public class FPSController : NetworkBehaviour
     public WeaponBase[] weapons; // 0: Tüfek, 1: Tabanca
     public LayerMask shootLayer = Physics.DefaultRaycastLayers; // Sadece oyuncuları (veya duvarları) vurması için ayarlayabilirsin
 
+    [Header("Bomba (Utility) Ayarları")]
+    public GrenadeBase grenadePrefab;
+    public GrenadeBase smokePrefab;
+    public GrenadeBase flashPrefab;
+    [Tooltip("Bombanın fırlatılacağı nokta. Boş bırakılırsa kamera kullanılır.")]
+    public Transform grenadeThrowOrigin;
+
+    [Header("Bomba Envanteri")]
+    public int grenadeCount = 2;
+    public int smokeCount = 1;
+    public int flashCount = 1;
+
     private CharacterController _controller;
     private Vector3 _velocity;
     private bool _isGrounded;
@@ -542,16 +554,61 @@ public class FPSController : NetworkBehaviour
 
     // ── BOMBALAR VE EKSTRALAR ────────────────────────────────────────────
 
+    private enum GrenadeType { Frag, Smoke, Flash }
+
     private void HandleUtilities()
     {
         if (grenadeInput != null && grenadeInput.action.WasPressedThisFrame())
-            Debug.Log("Grenade (1) fırlatıldı!"); // TODO: Grenade mantığı
-            
+            TryThrowGrenade(GrenadeType.Frag);
+
         if (smokeInput != null && smokeInput.action.WasPressedThisFrame())
-            Debug.Log("Smoke (2) fırlatıldı!"); // TODO: Smoke mantığı
-            
+            TryThrowGrenade(GrenadeType.Smoke);
+
         if (flashbangInput != null && flashbangInput.action.WasPressedThisFrame())
-            Debug.Log("Flashbang (3) fırlatıldı!"); // TODO: Flashbang mantığı
+            TryThrowGrenade(GrenadeType.Flash);
+    }
+
+    private void TryThrowGrenade(GrenadeType type)
+    {
+        switch (type)
+        {
+            case GrenadeType.Frag:
+                if (grenadeCount <= 0 || grenadePrefab == null) return;
+                grenadeCount--;
+                break;
+            case GrenadeType.Smoke:
+                if (smokeCount <= 0 || smokePrefab == null) return;
+                smokeCount--;
+                break;
+            case GrenadeType.Flash:
+                if (flashCount <= 0 || flashPrefab == null) return;
+                flashCount--;
+                break;
+        }
+
+        Transform origin = grenadeThrowOrigin != null ? grenadeThrowOrigin : playerCamera;
+        Vector3 spawnPos = origin.position + origin.forward * 0.5f;
+        Vector3 throwDir = origin.forward;
+
+        ThrowGrenadeRpc((int)type, spawnPos, throwDir);
+    }
+
+    [Rpc(SendTo.Server)]
+    private void ThrowGrenadeRpc(int grenadeTypeInt, Vector3 spawnPos, Vector3 direction, RpcParams rpcParams = default)
+    {
+        GrenadeBase prefab = (GrenadeType)grenadeTypeInt switch
+        {
+            GrenadeType.Frag  => grenadePrefab,
+            GrenadeType.Smoke => smokePrefab,
+            GrenadeType.Flash => flashPrefab,
+            _                 => null
+        };
+
+        if (prefab == null) return;
+
+        GrenadeBase grenade = Instantiate(prefab, spawnPos, Quaternion.LookRotation(direction));
+        grenade.GetComponent<NetworkObject>().Spawn();
+        grenade.Launch(direction);
     }
 
     // ── INPUT KONTROLLERİ ────────────────────────────────────────────────

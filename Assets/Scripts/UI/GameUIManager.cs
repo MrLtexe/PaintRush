@@ -24,6 +24,9 @@ public class GameUIManager : MonoBehaviour
     [SerializeField] private Slider interactionProgressBar;
     [SerializeField] private TMP_Text interactionText;
 
+    [Header("Flash Bombası UI")]
+    [SerializeField] private Image flashOverlay;
+
     [Header("Ölüm ve Yeniden Doğma UI")]
     [SerializeField] private GameObject deathPanel;
     [SerializeField] private TMP_Text deathCountdownText;
@@ -105,6 +108,16 @@ public class GameUIManager : MonoBehaviour
     public void UpdateHealthUI(int currentHealth, int maxHealth = 100)
     {
         if (healthText) healthText.text = $"{currentHealth} Hp";
+    }
+
+    public void ShowFlash(float duration)
+    {
+        if (flashOverlay == null) return;
+        flashOverlay.DOKill();
+        flashOverlay.gameObject.SetActive(true);
+        flashOverlay.color = Color.white;
+        flashOverlay.DOFade(0f, duration).SetEase(Ease.InQuad)
+            .OnComplete(() => flashOverlay.gameObject.SetActive(false));
     }
 
     public void ShowRespawnScreen(float duration)

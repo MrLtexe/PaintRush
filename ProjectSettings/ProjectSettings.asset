@@ -939,11 +939,11 @@ PlayerSettings:
   captureStartupLogs: {}
   activeInputHandler: 1
   windowsGamepadBackendHint: 0
-  cloudProjectId: 2bfd4973-fc3b-4eb2-bcc4-e11c856b5342
+  cloudProjectId: c7ca6134-234f-447d-a113-0bbd10db8c54
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
   projectName: PaintRush
-  organizationId: pare_bey
+  organizationId: ltexe
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   hmiLoadingImage: {fileID: 0}
