@@ -36,18 +36,20 @@ public class FragGrenade : GrenadeBase
 
         if (decalPrefab == null) return;
 
-        // Patladığı yüzeyi bul ve decal'ı yüzey normaline hizala
-        if (Physics.Raycast(position + Vector3.up * 0.1f, Vector3.down, out RaycastHit hit, 0.5f))
+        // Patladığı yüzeyi (zemini) bul ve decal'ı yüzey normaline hizala
+        // Bombanın havada patlama ihtimaline karşı ışın (raycast) mesafesini 3 metreye çıkarıyoruz
+        if (Physics.Raycast(position + Vector3.up * 0.5f, Vector3.down, out RaycastHit hit, 3.0f))
         {
             Vector3 spawnPos = hit.point + hit.normal * 0.001f;
-            Quaternion spawnRot = Quaternion.LookRotation(hit.normal);
+            // Quad veya Decal objesinin yüzeye tam oturup dışarı bakması için ters normal kullanıyoruz
+            Quaternion spawnRot = Quaternion.LookRotation(-hit.normal);
             GameObject decal = Instantiate(decalPrefab, spawnPos, spawnRot);
             Destroy(decal, decalLifetime);
         }
         else
         {
-            // Zemin bulunamazsa direkt patlama noktasına yerleştir (yukarı bakan)
-            GameObject decal = Instantiate(decalPrefab, position, Quaternion.LookRotation(Vector3.up));
+            // Zemin bulunamazsa direkt patlama noktasına yerleştir
+            GameObject decal = Instantiate(decalPrefab, position, Quaternion.LookRotation(Vector3.down));
             Destroy(decal, decalLifetime);
         }
     }

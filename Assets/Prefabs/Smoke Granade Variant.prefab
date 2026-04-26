@@ -98,5 +98,6 @@ MonoBehaviour:
   fuseTime: 3
   throwForce: 15
   smokeDuration: 8
-  smokeFxPrefab: {fileID: 0}
+  expandDuration: 1
+  smokeVolumePrefab: {fileID: 0}
   deploySound: {fileID: 0}
