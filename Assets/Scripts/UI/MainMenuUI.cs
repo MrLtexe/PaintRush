@@ -98,6 +98,11 @@ public class MainMenuUI : MonoBehaviour
     private async void OnJoinClicked()
     {
         string code = joinCodeInputField.text.Trim().ToUpper();
+        
+        // Eğer oyuncu yanlışlıkla "KOD: ABCD12" şeklinde kopyaladıysa "KOD:" kısmını temizle
+        if (code.StartsWith("KOD:")) code = code.Substring(4).Trim();
+        else if (code.StartsWith("KOD")) code = code.Substring(3).Trim();
+
         if (string.IsNullOrEmpty(code))
         {
             SetWarning("Join kodu gir!");
