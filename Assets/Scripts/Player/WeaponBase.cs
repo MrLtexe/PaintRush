@@ -211,7 +211,11 @@ public abstract class WeaponBase : NetworkBehaviour
     {
         if (weaponAudioSource != null && shootSound != null) weaponAudioSource.PlayOneShot(shootSound);
 
-        ShowMuzzleFlash();
+        // Muzzle flash sadece silahın sahibinde (Owner) görünsün
+        if (IsOwner)
+        {
+            ShowMuzzleFlash();
+        }
 
         if (bulletTrailPrefab != null && barrelPoint != null)
         {

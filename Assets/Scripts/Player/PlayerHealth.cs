@@ -55,6 +55,12 @@ public class PlayerHealth : NetworkBehaviour
     private void OnHealthChanged(int previous, int current)
     {
         if (GameUIManager.Instance != null) GameUIManager.Instance.UpdateHealthUI(current);
+        
+        // Eğer yeni canımız eskisinden düşükse (hasar aldıysak) efekti göster
+        if (current < previous)
+        {
+            if (GameUIManager.Instance != null) GameUIManager.Instance.ShowHitEffect();
+        }
     }
 
     // Sadece sunucu hasar verebilir

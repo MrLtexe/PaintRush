@@ -32,6 +32,9 @@ public class GameUIManager : MonoBehaviour
     [Header("Flash Bombası UI")]
     [SerializeField] private Image flashOverlay;
 
+    [Header("Hasar Efekti UI")]
+    [SerializeField] private Image hitOverlay;
+
     [Header("Ölüm ve Yeniden Doğma UI")]
     [SerializeField] private GameObject deathPanel;
     [SerializeField] private TMP_Text deathCountdownText;
@@ -138,6 +141,18 @@ public class GameUIManager : MonoBehaviour
         flashOverlay.color = Color.white;
         flashOverlay.DOFade(0f, duration).SetEase(Ease.InQuad)
             .OnComplete(() => flashOverlay.gameObject.SetActive(false));
+    }
+
+    public void ShowHitEffect()
+    {
+        if (hitOverlay == null) return;
+        
+        hitOverlay.DOKill(); // Eğer önceden çalan bir animasyon varsa durdur (peş peşe hasar yendiğinde sıfırlanması için)
+        hitOverlay.gameObject.SetActive(true);
+        
+        hitOverlay.color = new Color(1f, 1f, 1f, 0.8f); // Görünürlüğü (Alpha) %80'e çek
+        hitOverlay.DOFade(0f, 0.4f).SetEase(Ease.OutQuad) // 0.4 saniye içinde yavaşça şeffaflaşıp kaybolsun
+            .OnComplete(() => hitOverlay.gameObject.SetActive(false));
     }
 
     public void ShowRespawnScreen(float duration)
