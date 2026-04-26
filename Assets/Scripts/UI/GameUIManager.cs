@@ -16,6 +16,9 @@ public class GameUIManager : MonoBehaviour
     [SerializeField] private TMP_Text switchesText;
     [SerializeField] private TMP_Text healthText;
 
+    [Header("Silah UI")]
+    [SerializeField] private TMP_Text ammoText;
+
     [Header("Etkileşim (İlerleme) UI")]
     [SerializeField] private GameObject interactionPanel;
     [SerializeField] private Slider interactionProgressBar;
@@ -80,6 +83,11 @@ public class GameUIManager : MonoBehaviour
             GameState.MatchEnd => "Maç Bitti",
             _ => ""
         };
+    }
+
+    public void UpdateAmmoUI(int currentAmmo, int reserveAmmo)
+    {
+        if (ammoText) ammoText.text = $"Mermi: {currentAmmo} / {reserveAmmo}";
     }
 
     public void ShowInteraction(string message, float progress)

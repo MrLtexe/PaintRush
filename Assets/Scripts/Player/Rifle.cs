@@ -11,6 +11,12 @@ public class Rifle : WeaponBase
         isAutomatic = true; // Basılı tutunca sürekli sıkar
         verticalRecoil = 2f;
         horizontalRecoil = 0.8f;
+
+        // Mermi sistemi
+        maxAmmoPerMag = 30;
+        currentAmmo = 30;
+        reserveAmmo = 60; // 2 Yedek Şarjör
+        reloadTime = 3f;
     }
 
     // İleride buraya tüfeğe özel geri tepme (Recoil) veya dürbün (ADS) özellikleri eklenebilir.

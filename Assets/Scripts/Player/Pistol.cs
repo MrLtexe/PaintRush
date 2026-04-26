@@ -11,6 +11,12 @@ public class Pistol : WeaponBase
         isAutomatic = false; // Sadece her tıklamada 1 kez sıkar
         verticalRecoil = 1.5f;
         horizontalRecoil = 0.3f;
+
+        // Mermi sistemi
+        maxAmmoPerMag = 12;
+        currentAmmo = 12;
+        reserveAmmo = 24; // 2 Yedek Şarjör
+        reloadTime = 1.5f;
     }
 
     // İleride buraya tabancaya özel hızlı çekme veya koşarken sekme özellikleri eklenebilir.

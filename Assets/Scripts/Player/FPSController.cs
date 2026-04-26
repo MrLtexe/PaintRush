@@ -30,6 +30,8 @@ public class FPSController : NetworkBehaviour
     public InputActionReference smokeInput;
     [Tooltip("Input Asset'te Button tipinde '3' tuşuna atanmış aksiyon")]
     public InputActionReference flashbangInput;
+    [Tooltip("Input Asset'te Button tipinde 'R' tuşuna atanmış aksiyon")]
+    public InputActionReference reloadInput;
 
     [Header("Etkileşim (Interact) Ayarları")]
     public InputActionReference interactInput;
@@ -465,6 +467,12 @@ public class FPSController : NetworkBehaviour
         if (weapons != null && weapons.Length > _currentWeaponIndex && weapons[_currentWeaponIndex] != null)
         {
             weapons[_currentWeaponIndex].HandleShooting(isShootingDown, isShootingPressed, playerCamera, this);
+
+            // R tuşuna basılırsa manuel reload yap
+            if (reloadInput != null && reloadInput.action.WasPressedThisFrame())
+            {
+                weapons[_currentWeaponIndex].StartReload();
+            }
         }
 
         // Scroll ile silah değiştirme (Mouse ScrollWheel)
@@ -495,6 +503,12 @@ public class FPSController : NetworkBehaviour
 
         if (IsOwner)
         {
+            // Silah değiştirirken önceki silahın reload işlemini iptal et
+            if (weapons[_currentWeaponIndex] != null)
+            {
+                weapons[_currentWeaponIndex].CancelReload();
+            }
+
             networkWeaponIndex.Value = weaponIndex;
         }
     }
@@ -520,6 +534,8 @@ public class FPSController : NetworkBehaviour
             if (_currentWeaponIndex >= 0 && _currentWeaponIndex < weapons.Length && weapons[_currentWeaponIndex] != null)
             {
                 Debug.Log($"{weapons[_currentWeaponIndex].weaponName} donanıldı.");
+                // Ekrana yeni geçilen silahın mermisini yazdır
+                weapons[_currentWeaponIndex].UpdateAmmoUI();
             }
         }
     }

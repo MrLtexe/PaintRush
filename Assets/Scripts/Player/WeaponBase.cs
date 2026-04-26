@@ -11,6 +11,13 @@ public abstract class WeaponBase : NetworkBehaviour
     public float fireRate; // Saniyede kaç mermi atılabileceği
     public bool isAutomatic; // Otomatik (basılı tutunca sıkan) mi, yoksa tekli mi?
 
+    [Header("Mermi ve Şarjör (Ammo)")]
+    public int maxAmmoPerMag;    // Şarjör kapasitesi
+    public int currentAmmo;      // Şarjördeki anlık mermi
+    public int reserveAmmo;      // Yedekteki toplam mermi
+    public float reloadTime;     // Yeniden yükleme süresi
+    public bool isReloading;     // Şu an reload yapıyor mu?
+
     [Header("Geri Tepme (Recoil)")]
     public float verticalRecoil = 2f;
     public float horizontalRecoil = 0.5f;
@@ -27,21 +34,98 @@ public abstract class WeaponBase : NetworkBehaviour
 
     protected float nextTimeToFire = 0f;
 
+    private Coroutine _reloadCoroutine;
+    private Vector3 _initialLocalRot;
+
+    private void Start()
+    {
+        _initialLocalRot = transform.localEulerAngles;
+    }
+
+    private void OnDisable()
+    {
+        // Silah gizlenirse (değiştirilirse) reload'u güvenli şekilde iptal et
+        CancelReload();
+    }
+
     // Oyuncu inputlarına göre ateş etme denemesi yapar
     public virtual void HandleShooting(bool wasPressed, bool isPressed, Transform cameraTransform, FPSController shooter)
     {
+        if (isReloading) return; // Reload yapıyorsa ateş edemez
+
         bool wantToShoot = isAutomatic ? isPressed : wasPressed;
 
         if (wantToShoot && Time.time >= nextTimeToFire)
         {
-            nextTimeToFire = Time.time + (1f / fireRate);
-            PerformShoot(cameraTransform, shooter);
+            if (currentAmmo > 0)
+            {
+                nextTimeToFire = Time.time + (1f / fireRate);
+                PerformShoot(cameraTransform, shooter);
+            }
+            else
+            {
+                // Şarjör boşsa tıklayınca otomatik reload yap
+                StartReload();
+            }
+        }
+    }
+
+    public void StartReload()
+    {
+        // Zaten reload yapıyorsa, şarjör tam doluysa veya yedekte mermi yoksa işlemi yapma
+        if (isReloading || currentAmmo >= maxAmmoPerMag || reserveAmmo <= 0) return;
+        
+        if (_reloadCoroutine != null) StopCoroutine(_reloadCoroutine);
+        _reloadCoroutine = StartCoroutine(ReloadRoutine());
+    }
+
+    private System.Collections.IEnumerator ReloadRoutine()
+    {
+        isReloading = true;
+
+        // Sadece lokalde çalışan basit DOTween animasyonu (Silah namlusunu yukarı 60 derece kaldırıp indirir)
+        Vector3 reloadRot = _initialLocalRot + new Vector3(-60f, 0, 0);
+        transform.DOLocalRotate(reloadRot, reloadTime / 2f).SetEase(Ease.InOutQuad)
+            .OnComplete(() => transform.DOLocalRotate(_initialLocalRot, reloadTime / 2f).SetEase(Ease.InOutQuad));
+
+        yield return new WaitForSeconds(reloadTime);
+
+        // Mermi hesaplaması (Taktiksel Reload: Sadece eksik olanı tamamla)
+        int bulletsNeeded = maxAmmoPerMag - currentAmmo;
+        int bulletsToLoad = Mathf.Min(bulletsNeeded, reserveAmmo);
+
+        currentAmmo += bulletsToLoad;
+        reserveAmmo -= bulletsToLoad;
+        
+        isReloading = false;
+        UpdateAmmoUI();
+    }
+
+    public void CancelReload()
+    {
+        if (isReloading)
+        {
+            if (_reloadCoroutine != null) StopCoroutine(_reloadCoroutine);
+            isReloading = false;
+            transform.DOKill();
+            transform.localEulerAngles = _initialLocalRot; // Silah açısını sıfırla
+        }
+    }
+
+    public void UpdateAmmoUI()
+    {
+        if (IsOwner && GameUIManager.Instance != null)
+        {
+            GameUIManager.Instance.UpdateAmmoUI(currentAmmo, reserveAmmo);
         }
     }
 
     // Gerçek mermi atış mantığı (Raycast)
     protected virtual void PerformShoot(Transform cameraTransform, FPSController shooter)
     {
+        currentAmmo--;
+        UpdateAmmoUI();
+
         Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
         
         Vector3 hitPoint = ray.GetPoint(range); // Default olarak menzil sonunu hedefle (havaya sıkılırsa)
