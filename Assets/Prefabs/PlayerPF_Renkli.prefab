@@ -10305,9 +10305,6 @@ MonoBehaviour:
   smokePrefab: {fileID: 6113502158936759415, guid: 64fd2787a6c3ad24e85abfd577773f17, type: 3}
   flashPrefab: {fileID: 7571781123290809695, guid: 54d223c61be3786478c365715b01c96f, type: 3}
   grenadeThrowOrigin: {fileID: 7868044104970830973}
-  grenadeCount: 2
-  smokeCount: 1
-  flashCount: 1
   grenadeCooldown: 30
   networkViewPitch:
     UpdateTraits:
@@ -10656,6 +10653,7 @@ MonoBehaviour:
   isAutomatic: 1
   maxAmmoPerMag: 0
   currentAmmo: 0
+  maxReserveAmmo: 0
   reserveAmmo: 0
   reloadTime: 0
   isReloading: 0
@@ -10664,7 +10662,10 @@ MonoBehaviour:
   barrelPoint: {fileID: 8496019756201245766}
   muzzleFlash: {fileID: 8041235525940663471}
   bulletTrailPrefab: {fileID: 6658467092352856763, guid: 2c3c150250674994eaf5e7f402a5f2be, type: 3}
-  bulletHolePrefab: {fileID: 0}
+  bulletHolePrefabs:
+  - {fileID: 5601958093492566224, guid: ccdead23779091945a84db9f9e0c31b1, type: 3}
+  - {fileID: 5601958093492566224, guid: 763dbabe18421b44794d1ac707b78f52, type: 3}
+  - {fileID: 5601958093492566224, guid: 0715d2b9544c876438b81350a39515d3, type: 3}
   weaponAudioSource: {fileID: 6826735167504432104}
   shootSound: {fileID: 0}
 --- !u!82 &6826735167504432104
@@ -10877,6 +10878,7 @@ MonoBehaviour:
   isAutomatic: 0
   maxAmmoPerMag: 0
   currentAmmo: 0
+  maxReserveAmmo: 0
   reserveAmmo: 0
   reloadTime: 0
   isReloading: 0
@@ -10885,7 +10887,10 @@ MonoBehaviour:
   barrelPoint: {fileID: 8070255346789132875}
   muzzleFlash: {fileID: 6962631551539225278}
   bulletTrailPrefab: {fileID: 6658467092352856763, guid: 2c3c150250674994eaf5e7f402a5f2be, type: 3}
-  bulletHolePrefab: {fileID: 0}
+  bulletHolePrefabs:
+  - {fileID: 5601958093492566224, guid: 8b2dda5f086d1914183e855522dfc556, type: 3}
+  - {fileID: 5601958093492566224, guid: a6344b5b7fe8e05408fb884e7eae9127, type: 3}
+  - {fileID: 5601958093492566224, guid: a4deaddda2befa1458ad87a79ccd6fc6, type: 3}
   weaponAudioSource: {fileID: 4033744459450459590}
   shootSound: {fileID: 0}
 --- !u!82 &4033744459450459590
