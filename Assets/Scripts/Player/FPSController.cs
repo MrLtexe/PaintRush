@@ -50,9 +50,6 @@ public class FPSController : NetworkBehaviour
     public Transform grenadeThrowOrigin;
 
     [Header("Bomba Envanteri")]
-    public int grenadeCount = 2;
-    public int smokeCount = 1;
-    public int flashCount = 1;
     public float grenadeCooldown = 30f;
 
     private readonly float[] _grenadeCooldowns = new float[3];
@@ -565,16 +562,13 @@ public class FPSController : NetworkBehaviour
         switch (type)
         {
             case GrenadeType.Frag:
-                if (grenadeCount <= 0 || grenadePrefab == null) return;
-                grenadeCount--;
+                if (grenadePrefab == null) return;
                 break;
             case GrenadeType.Smoke:
-                if (smokeCount <= 0 || smokePrefab == null) return;
-                smokeCount--;
+                if (smokePrefab == null) return;
                 break;
             case GrenadeType.Flash:
-                if (flashCount <= 0 || flashPrefab == null) return;
-                flashCount--;
+                if (flashPrefab == null) return;
                 break;
         }
 
