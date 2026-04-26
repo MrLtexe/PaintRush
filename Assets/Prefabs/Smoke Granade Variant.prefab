@@ -112,4 +112,4 @@ MonoBehaviour:
   smokeDuration: 10
   expandDuration: 1
   smokeVolumePrefab: {fileID: 4872806707598877216, guid: 401d70d8bb58dd44f807eba401191991, type: 3}
-  deploySound: {fileID: 0}
+  deploySound: {fileID: 8300000, guid: 6b5ecf997ed520e4ca4f3b8b271c5325, type: 3}

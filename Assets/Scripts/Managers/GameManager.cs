@@ -29,6 +29,7 @@ public class GameManager : NetworkBehaviour
     public float transitionDuration = 3f;
     public float defuseDuration = 40f;
     public float roundEndDuration = 8f; // Patlama görselini izlemek için süreyi uzattık
+    public float matchEndDuration = 5f; // Maç bitince lobiye dönmeden önceki bekleme süresi
     public float respawnCooldown = 5f;
 
     [Header("Görev Ayarları")]
@@ -49,6 +50,9 @@ public class GameManager : NetworkBehaviour
     public Renderer mapRenderer; // Haritanın ana mesh rendereri
     public Material[] explodedMapMaterials; // Patlama anında sırayla geçilecek 4 materyal
     private Material[] _originalMapMaterials; // Raund başı sıfırlamak için orijinal materyaller
+
+    [Header("Sahne Ayarları")]
+    public string lobbySceneName = "MainMenu"; // Lobi sahnenizin tam adı
 
     private void Awake()
     {
@@ -263,11 +267,22 @@ public class GameManager : NetworkBehaviour
         if (RenkliTeamScore.Value >= ScoreToWin || RenksizTeamScore.Value >= ScoreToWin)
         {
             CurrentState.Value = GameState.MatchEnd;
+            StartCoroutine(ReturnToLobbyRoutine());
             Debug.Log("[GameManager] MAÇ BİTTİ!");
         }
         else
         {
             ChangeState(GameState.RoundEnd, roundEndDuration);
+        }
+    }
+
+    private IEnumerator ReturnToLobbyRoutine()
+    {
+        yield return new WaitForSeconds(matchEndDuration);
+        
+        if (IsServer && NetworkManager.Singleton.SceneManager != null)
+        {
+            NetworkManager.Singleton.SceneManager.LoadScene(lobbySceneName, UnityEngine.SceneManagement.LoadSceneMode.Single);
         }
     }
 

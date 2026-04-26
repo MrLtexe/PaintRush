@@ -49,7 +49,18 @@ public class MainMenuUI : MonoBehaviour
         if (renkliTeamButton) renkliTeamButton.onClick.AddListener(() => OnTeamClicked(1));
         if (renksizTeamButton) renksizTeamButton.onClick.AddListener(() => OnTeamClicked(2));
         
-        ShowMenu();
+        // Eğer lobiye maçtan dönüldüyse (zaten bağlıysak) Host/Join yerine doğrudan lobiyi göster
+        if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsClient)
+        {
+            ShowLobby();
+            UpdatePlayerListUI();
+            if (NetworkManager.Singleton.IsServer) UpdatePlayerCount();
+            if (startGameButton) startGameButton.gameObject.SetActive(NetworkManager.Singleton.IsServer);
+        }
+        else
+        {
+            ShowMenu();
+        }
     }
 
     private void OnEnable()

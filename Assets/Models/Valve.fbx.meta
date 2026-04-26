@@ -3,7 +3,27 @@ guid: e4466f142f990c541a3c40a7c6974213
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: ValveMaterial1
+    second: {fileID: 2100000, guid: a16d62fcf48b804499225467f653b266, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: ValveMaterial2
+    second: {fileID: 2100000, guid: 50f5ec79305a4cc41a256e5d39dac133, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: ValveMaterial3
+    second: {fileID: 2100000, guid: 5ed2db71370d4c146a16da8a1a846a19, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: ValveMaterial4
+    second: {fileID: 2100000, guid: 902ab4d01a1410d4881711dc0c27d0ae, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
