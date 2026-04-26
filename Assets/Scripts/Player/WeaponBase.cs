@@ -27,7 +27,7 @@ public abstract class WeaponBase : NetworkBehaviour
     public Transform barrelPoint; // Namlu ucu
     public ParticleSystem muzzleFlash; // Namlu ateşi
     public TrailRenderer bulletTrailPrefab; // Mermi izi (Trail)
-    public GameObject bulletHolePrefab; // Duvarlardaki mermi deliği (Decal)
+    public GameObject[] bulletHolePrefabs; // Duvarlardaki rastgele mermi delikleri (Decal)
 
     [Header("Ses Efektleri")]
     public AudioSource weaponAudioSource; // Sesi çalacak kaynak
@@ -200,13 +200,19 @@ public abstract class WeaponBase : NetworkBehaviour
         }
 
         // Mermi deliği (Decal) oluşturma
-        if (spawnDecal && bulletHolePrefab != null)
+        if (spawnDecal && bulletHolePrefabs != null && bulletHolePrefabs.Length > 0)
         {
+            GameObject selectedDecal = bulletHolePrefabs[Random.Range(0, bulletHolePrefabs.Length)];
+            if (selectedDecal == null) return;
+
             // Titremeyi (Z-Fighting) önlemek için yüzeyden çok az (0.001f) öne alıyoruz
             Vector3 spawnPos = endPoint + hitNormal * 0.001f;
-            Quaternion spawnRot = Quaternion.LookRotation(hitNormal);
             
-            GameObject decal = Instantiate(bulletHolePrefab, spawnPos, spawnRot);
+            // URP Decal Projector'ın yüzeyin içine doğru yansıtması için ters normal (-hitNormal) kullanıyoruz
+            // Ayrıca deliklerin hep aynı açıda durmaması için Z ekseninde rastgele döndürüyoruz (Daha gerçekçi görünüm)
+            Quaternion spawnRot = Quaternion.LookRotation(-hitNormal) * Quaternion.Euler(0, 0, Random.Range(0f, 360f));
+            
+            GameObject decal = Instantiate(selectedDecal, spawnPos, spawnRot);
             Destroy(decal, 10f); // Performans için 10 saniye sonra sil
         }
     }

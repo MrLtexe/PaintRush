@@ -5,7 +5,7 @@ public class FragGrenade : GrenadeBase
 {
     [Header("Patlama Ayarları")]
     public float explosionRadius = 7f;
-    public int maxDamage = 100;
+    public int maxDamage = 150;
     public LayerMask playerLayer;
 
     [Header("Görsel Efektler")]

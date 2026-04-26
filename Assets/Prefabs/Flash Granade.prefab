@@ -225,10 +225,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  fuseTime: 3
+  fuseTime: 1
   throwForce: 15
   flashRadius: 12
-  flashDuration: 3
+  flashDuration: 5
   playerLayer:
     serializedVersion: 2
     m_Bits: 64

@@ -5,7 +5,7 @@ public class FlashGrenade : GrenadeBase
 {
     [Header("Flash Ayarları")]
     public float flashRadius = 100f;
-    public float flashDuration = 3f;
+    public float flashDuration = 5f;
     public LayerMask playerLayer;
     public LayerMask obstacleLayer = Physics.DefaultRaycastLayers; // Duvar arkasını algılamak için
 
@@ -27,16 +27,26 @@ public class FlashGrenade : GrenadeBase
             Vector3 dir = targetPos - startPos;
             float distance = dir.magnitude;
 
-            // Bombadan oyuncuya giden ışın bir engele (duvara) çarpıyor mu?
-            if (Physics.Raycast(startPos, dir.normalized, out RaycastHit hit, distance, obstacleLayer, QueryTriggerInteraction.Ignore))
+            bool isBlocked = false;
+            
+            // RaycastAll ile aradaki bütün objeleri tarıyoruz
+            RaycastHit[] hits = Physics.RaycastAll(startPos, dir.normalized, distance, obstacleLayer, QueryTriggerInteraction.Ignore);
+
+            foreach (var hit in hits)
             {
+                // Eğer ışın bombanın kendi fiziksel gövdesine (Collider) çarptıysa bunu bir duvar olarak sayma, görmezden gel
+                if (hit.collider.transform.root == this.transform.root) continue;
+
                 PlayerHealth hitHealth = hit.collider.GetComponentInParent<PlayerHealth>();
-                // Eğer ışın oyuncuya değil de başka bir şeye çarptıysa, oyuncu duvar arkasındadır
+                // Eğer ışın hedef oyuncuya değil de başka bir şeye (duvara vb.) çarptıysa engellenmiştir
                 if (hitHealth != health)
                 {
-                    continue; 
+                    isBlocked = true;
+                    break; 
                 }
             }
+
+            if (isBlocked) continue; // Araya duvar girdiyse kör etme
 
             // Sadece etkilenen oyuncunun client'ına flash gönder
             ulong clientId = health.OwnerClientId;
