@@ -234,4 +234,4 @@ MonoBehaviour:
     m_Bits: 65
   decalPrefab: {fileID: 6702140795818673225, guid: d26b0d6c419922e438d176365846977b, type: 3}
   decalLifetime: 10
-  explosionSound: {fileID: 0}
+  explosionSound: {fileID: 8300000, guid: 5ae74936f69e3334dac7685e345ae8e0, type: 3}

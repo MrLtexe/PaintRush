@@ -235,4 +235,4 @@ MonoBehaviour:
   obstacleLayer:
     serializedVersion: 2
     m_Bits: 4294967169
-  flashSound: {fileID: 0}
+  flashSound: {fileID: 8300000, guid: 5c20300b8aa9cb6499471cfa992910df, type: 3}

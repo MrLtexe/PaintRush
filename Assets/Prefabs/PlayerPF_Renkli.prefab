@@ -1178,7 +1178,7 @@ MonoBehaviour:
   - {fileID: 5601958093492566224, guid: 763dbabe18421b44794d1ac707b78f52, type: 3}
   - {fileID: 5601958093492566224, guid: 0715d2b9544c876438b81350a39515d3, type: 3}
   weaponAudioSource: {fileID: 6826735167504432104}
-  shootSound: {fileID: 0}
+  shootSound: {fileID: 8300000, guid: 6f452243d8f2cca40912b3d690710a6b, type: 3}
 --- !u!82 &6826735167504432104
 AudioSource:
   m_ObjectHideFlags: 0
@@ -1406,7 +1406,7 @@ MonoBehaviour:
   - {fileID: 5601958093492566224, guid: a6344b5b7fe8e05408fb884e7eae9127, type: 3}
   - {fileID: 5601958093492566224, guid: a4deaddda2befa1458ad87a79ccd6fc6, type: 3}
   weaponAudioSource: {fileID: 4033744459450459590}
-  shootSound: {fileID: 0}
+  shootSound: {fileID: 8300000, guid: 9e783ae2fba50b447a3c446ab80861c0, type: 3}
 --- !u!82 &4033744459450459590
 AudioSource:
   m_ObjectHideFlags: 0
