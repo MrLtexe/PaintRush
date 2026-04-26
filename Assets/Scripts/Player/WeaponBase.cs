@@ -24,10 +24,11 @@ public abstract class WeaponBase : NetworkBehaviour
     public float horizontalRecoil = 0.5f;
 
     [Header("Görsel Efektler")]
-    public Transform barrelPoint; // Namlu ucu
-    public ParticleSystem muzzleFlash; // Namlu ateşi
-    public TrailRenderer bulletTrailPrefab; // Mermi izi (Trail)
-    public GameObject[] bulletHolePrefabs; // Duvarlardaki rastgele mermi delikleri (Decal)
+    public Transform barrelPoint;
+    public SpriteRenderer muzzleFlashRenderer;
+    public Sprite[] muzzleFlashSprites;
+    public TrailRenderer bulletTrailPrefab;
+    public GameObject[] bulletHolePrefabs;
 
     [Header("Ses Efektleri")]
     public AudioSource weaponAudioSource; // Sesi çalacak kaynak
@@ -120,6 +121,27 @@ public abstract class WeaponBase : NetworkBehaviour
         }
     }
 
+    private void ShowMuzzleFlash()
+    {
+        if (muzzleFlashRenderer == null || muzzleFlashSprites == null || muzzleFlashSprites.Length == 0) return;
+
+        muzzleFlashRenderer.sprite = muzzleFlashSprites[Random.Range(0, muzzleFlashSprites.Length)];
+        muzzleFlashRenderer.gameObject.SetActive(true);
+
+        Camera cam = Camera.main;
+        if (cam != null)
+            muzzleFlashRenderer.transform.forward = cam.transform.forward;
+
+        StartCoroutine(HideMuzzleFlash());
+    }
+
+    private System.Collections.IEnumerator HideMuzzleFlash()
+    {
+        yield return new WaitForSeconds(0.05f);
+        if (muzzleFlashRenderer != null)
+            muzzleFlashRenderer.gameObject.SetActive(false);
+    }
+
     public void UpdateAmmoUI()
     {
         if (IsOwner && GameUIManager.Instance != null)
@@ -189,7 +211,7 @@ public abstract class WeaponBase : NetworkBehaviour
     {
         if (weaponAudioSource != null && shootSound != null) weaponAudioSource.PlayOneShot(shootSound);
 
-        if (muzzleFlash != null) muzzleFlash.Play();
+        ShowMuzzleFlash();
 
         if (bulletTrailPrefab != null && barrelPoint != null)
         {
