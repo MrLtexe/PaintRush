@@ -41,15 +41,17 @@ public class FragGrenade : GrenadeBase
         if (Physics.Raycast(position + Vector3.up * 0.5f, Vector3.down, out RaycastHit hit, 3.0f))
         {
             Vector3 spawnPos = hit.point + hit.normal * 0.001f;
-            // Quad veya Decal objesinin yüzeye tam oturup dışarı bakması için ters normal kullanıyoruz
-            Quaternion spawnRot = Quaternion.LookRotation(-hit.normal);
+            // Tıpkı mermi deliklerinde (WeaponBase) olduğu gibi: Yüzeyin içine doğru yansıtıp (-hit.normal),
+            // kendi etrafında rastgele döndürüyoruz (Z ekseninde Roll) ki zemine tam otursun
+            Quaternion spawnRot = Quaternion.LookRotation(-hit.normal) * Quaternion.Euler(0, 0, Random.Range(0f, 360f));
             GameObject decal = Instantiate(decalPrefab, spawnPos, spawnRot);
             Destroy(decal, decalLifetime);
         }
         else
         {
-            // Zemin bulunamazsa direkt patlama noktasına yerleştir
-            GameObject decal = Instantiate(decalPrefab, position, Quaternion.LookRotation(Vector3.down));
+            // Zemin bulunamazsa direkt aşağı bakacak şekilde yerleştir ve rastgele döndür
+            Quaternion spawnRot = Quaternion.LookRotation(Vector3.down) * Quaternion.Euler(0, 0, Random.Range(0f, 360f));
+            GameObject decal = Instantiate(decalPrefab, position, spawnRot);
             Destroy(decal, decalLifetime);
         }
     }
