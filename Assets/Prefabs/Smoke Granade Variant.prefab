@@ -25,6 +25,18 @@ PrefabInstance:
       value: Smoke Granade Variant
       objectReference: {fileID: 0}
     - target: {fileID: 6625833228299340821, guid: 1405b9d2e786cb54e98ddeada2da5500, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 6625833228299340821, guid: 1405b9d2e786cb54e98ddeada2da5500, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 6625833228299340821, guid: 1405b9d2e786cb54e98ddeada2da5500, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 6625833228299340821, guid: 1405b9d2e786cb54e98ddeada2da5500, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.85738933
       objectReference: {fileID: 0}
@@ -99,5 +111,5 @@ MonoBehaviour:
   throwForce: 15
   smokeDuration: 8
   expandDuration: 1
-  smokeVolumePrefab: {fileID: 0}
+  smokeVolumePrefab: {fileID: 4872806707598877216, guid: 401d70d8bb58dd44f807eba401191991, type: 3}
   deploySound: {fileID: 0}

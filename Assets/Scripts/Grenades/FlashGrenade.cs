@@ -4,9 +4,10 @@ using UnityEngine;
 public class FlashGrenade : GrenadeBase
 {
     [Header("Flash Ayarları")]
-    public float flashRadius = 12f;
-    public float maxFlashDuration = 2.5f;
+    public float flashRadius = 100f;
+    public float flashDuration = 3f;
     public LayerMask playerLayer;
+    public LayerMask obstacleLayer = Physics.DefaultRaycastLayers; // Duvar arkasını algılamak için
 
     [Header("Ses Efektleri")]
     public AudioClip flashSound;
@@ -20,15 +21,26 @@ public class FlashGrenade : GrenadeBase
             PlayerHealth health = col.GetComponentInParent<PlayerHealth>();
             if (health == null || health.isDead.Value) continue;
 
-            float distance = Vector3.Distance(position, col.transform.position);
-            float intensity = 1f - Mathf.Clamp01(distance / flashRadius);
-            float duration = maxFlashDuration * intensity;
+            // Yerden seken bombanın ışınının anında zemine çarpmasını önlemek için hafif yukarıdan başlatıyoruz
+            Vector3 startPos = position + Vector3.up * 0.1f;
+            Vector3 targetPos = col.bounds.center; // Doğrudan oyuncunun merkezini hedef al
+            Vector3 dir = targetPos - startPos;
+            float distance = dir.magnitude;
 
-            if (duration <= 0.05f) continue;
+            // Bombadan oyuncuya giden ışın bir engele (duvara) çarpıyor mu?
+            if (Physics.Raycast(startPos, dir.normalized, out RaycastHit hit, distance, obstacleLayer, QueryTriggerInteraction.Ignore))
+            {
+                PlayerHealth hitHealth = hit.collider.GetComponentInParent<PlayerHealth>();
+                // Eğer ışın oyuncuya değil de başka bir şeye çarptıysa, oyuncu duvar arkasındadır
+                if (hitHealth != health)
+                {
+                    continue; 
+                }
+            }
 
             // Sadece etkilenen oyuncunun client'ına flash gönder
             ulong clientId = health.OwnerClientId;
-            ApplyFlashToClientRpc(duration, RpcTarget.Single(clientId, RpcTargetUse.Temp));
+            ApplyFlashToClientRpc(flashDuration, RpcTarget.Single(clientId, RpcTargetUse.Temp));
         }
     }
 
@@ -43,8 +55,5 @@ public class FlashGrenade : GrenadeBase
     {
         if (flashSound != null)
             AudioSource.PlayClipAtPoint(flashSound, position);
-
-        // Tüm oyuncularda kısa bir beyaz flash (görsel ipucu)
-        GameUIManager.Instance?.ShowFlash(0.2f);
     }
 }
