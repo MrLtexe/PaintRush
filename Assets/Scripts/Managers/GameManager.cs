@@ -156,18 +156,8 @@ public class GameManager : NetworkBehaviour
             }
         }
 
-        // Harita materyallerini orijinal (patlamamış) haline geri döndür
-        if (mapRenderer != null && _originalMapMaterials != null && _originalMapMaterials.Length > 0)
-        {
-            mapRenderer.sharedMaterials = _originalMapMaterials;
-        }
-
-        // Haritadaki tüm mermi ve patlama izlerini (Decal) anında temizle
-        MapDecal[] allDecals = FindObjectsByType<MapDecal>(FindObjectsSortMode.None);
-        foreach (var decal in allDecals)
-        {
-            if (decal != null) Destroy(decal.gameObject);
-        }
+        // Bütün oyuncularda harita görsellerini (materyal ve decallar) sıfırla
+        ResetMapVisualsRpc();
 
         // Şalterleri sıfırla
         InteractableSwitch[] switches = FindObjectsByType<InteractableSwitch>(FindObjectsSortMode.None);
@@ -243,6 +233,23 @@ public class GameManager : NetworkBehaviour
                 mapRenderer.sharedMaterials = currentMaterials; // Array'i Mesh'e geri ata
             }
             yield return new WaitForSeconds(1f); // Her materyal değişiminde yarım saniye bekle
+        }
+    }
+
+    [Rpc(SendTo.Everyone)]
+    private void ResetMapVisualsRpc()
+    {
+        // Harita materyallerini orijinal (patlamamış) haline geri döndür
+        if (mapRenderer != null && _originalMapMaterials != null && _originalMapMaterials.Length > 0)
+        {
+            mapRenderer.sharedMaterials = _originalMapMaterials;
+        }
+
+        // Haritadaki tüm mermi ve patlama izlerini (Decal) anında temizle
+        MapDecal[] allDecals = FindObjectsByType<MapDecal>(FindObjectsSortMode.None);
+        foreach (var decal in allDecals)
+        {
+            if (decal != null) Destroy(decal.gameObject);
         }
     }
 
