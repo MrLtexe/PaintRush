@@ -175,7 +175,7 @@ public abstract class WeaponBase : NetworkBehaviour
         shooter.AddRecoil(verticalRecoil, horizontalRecoil);
     }
 
-    [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Owner)]
+    [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Everyone)]
     private void PlayShootVisualsRpc(Vector3 endPoint, Vector3 hitNormal, bool spawnDecal, RpcParams rpcParams = default)
     {
         if (weaponAudioSource != null && shootSound != null) weaponAudioSource.PlayOneShot(shootSound);

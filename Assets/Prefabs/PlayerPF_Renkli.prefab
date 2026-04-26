@@ -10240,7 +10240,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 474786789
+  GlobalObjectIdHash: 1703655694
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -10300,7 +10300,7 @@ MonoBehaviour:
   grenadeCount: 2
   smokeCount: 1
   flashCount: 1
-  _animator: {fileID: 0}
+  grenadeCooldown: 30
   networkViewPitch:
     UpdateTraits:
       MinSecondsBetweenUpdates: 0
@@ -10665,7 +10665,7 @@ MonoBehaviour:
   damage: 0
   range: 0
   fireRate: 0
-  isAutomatic: 0
+  isAutomatic: 1
   maxAmmoPerMag: 0
   currentAmmo: 0
   reserveAmmo: 0
