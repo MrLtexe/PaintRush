@@ -53,6 +53,9 @@ public class FPSController : NetworkBehaviour
     public int grenadeCount = 2;
     public int smokeCount = 1;
     public int flashCount = 1;
+    public float grenadeCooldown = 30f;
+
+    private readonly float[] _grenadeCooldowns = new float[3];
 
     private CharacterController _controller;
     private Vector3 _velocity;
@@ -558,6 +561,15 @@ public class FPSController : NetworkBehaviour
 
     private void HandleUtilities()
     {
+        for (int i = 0; i < _grenadeCooldowns.Length; i++)
+        {
+            if (_grenadeCooldowns[i] > 0f)
+                _grenadeCooldowns[i] -= Time.deltaTime;
+        }
+
+        if (GameUIManager.Instance != null)
+            GameUIManager.Instance.UpdateGrenadeCooldownUI(_grenadeCooldowns[0], _grenadeCooldowns[1], _grenadeCooldowns[2]);
+
         if (grenadeInput != null && grenadeInput.action.WasPressedThisFrame())
             TryThrowGrenade(GrenadeType.Frag);
 
@@ -570,6 +582,9 @@ public class FPSController : NetworkBehaviour
 
     private void TryThrowGrenade(GrenadeType type)
     {
+        int idx = (int)type;
+        if (_grenadeCooldowns[idx] > 0f) return;
+
         switch (type)
         {
             case GrenadeType.Frag:
@@ -585,6 +600,8 @@ public class FPSController : NetworkBehaviour
                 flashCount--;
                 break;
         }
+
+        _grenadeCooldowns[idx] = grenadeCooldown;
 
         Transform origin = grenadeThrowOrigin != null ? grenadeThrowOrigin : playerCamera;
         Vector3 spawnPos = origin.position + origin.forward * 0.5f;

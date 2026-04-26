@@ -24,6 +24,11 @@ public class GameUIManager : MonoBehaviour
     [SerializeField] private Slider interactionProgressBar;
     [SerializeField] private TMP_Text interactionText;
 
+    [Header("Bomba Cooldown UI")]
+    [SerializeField] private TMP_Text fragCooldownText;
+    [SerializeField] private TMP_Text smokeCooldownText;
+    [SerializeField] private TMP_Text flashCooldownText;
+
     [Header("Flash Bombası UI")]
     [SerializeField] private Image flashOverlay;
 
@@ -108,6 +113,19 @@ public class GameUIManager : MonoBehaviour
     public void UpdateHealthUI(int currentHealth, int maxHealth = 100)
     {
         if (healthText) healthText.text = $"{currentHealth} Hp";
+    }
+
+    public void UpdateGrenadeCooldownUI(float frag, float smoke, float flash)
+    {
+        SetCooldownText(fragCooldownText, frag);
+        SetCooldownText(smokeCooldownText, smoke);
+        SetCooldownText(flashCooldownText, flash);
+    }
+
+    private static void SetCooldownText(TMP_Text label, float remaining)
+    {
+        if (label == null) return;
+        label.text = remaining > 0f ? Mathf.CeilToInt(remaining).ToString() : "HAZIR";
     }
 
     public void ShowFlash(float duration)
