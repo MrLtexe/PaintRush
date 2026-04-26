@@ -235,7 +235,6 @@ public abstract class WeaponBase : NetworkBehaviour
             Quaternion spawnRot = Quaternion.LookRotation(-hitNormal) * Quaternion.Euler(0, 0, Random.Range(0f, 360f));
             
             GameObject decal = Instantiate(selectedDecal, spawnPos, spawnRot);
-            Destroy(decal, 10f); // Performans için 10 saniye sonra sil
         }
     }
 }

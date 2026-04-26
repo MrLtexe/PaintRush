@@ -150,6 +150,13 @@ public class GameManager : NetworkBehaviour
             }
         }
 
+        // Haritadaki tüm mermi ve patlama izlerini (Decal) anında temizle
+        MapDecal[] allDecals = FindObjectsByType<MapDecal>(FindObjectsSortMode.None);
+        foreach (var decal in allDecals)
+        {
+            if (decal != null) Destroy(decal.gameObject);
+        }
+
         // Şalterleri sıfırla
         InteractableSwitch[] switches = FindObjectsByType<InteractableSwitch>(FindObjectsSortMode.None);
         foreach (var sw in switches)
