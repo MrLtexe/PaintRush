@@ -21,8 +21,8 @@ public class FlashGrenade : GrenadeBase
             PlayerHealth health = col.GetComponentInParent<PlayerHealth>();
             if (health == null || health.isDead.Value) continue;
 
-            // Yerden seken bombanın ışınının anında zemine çarpmasını önlemek için hafif yukarıdan başlatıyoruz
-            Vector3 startPos = position + Vector3.up * 0.1f;
+            // Yerden seken bombanın ışınının anında zemine çarpmasını önlemek için 1 birim yukarıdan başlatıyoruz
+            Vector3 startPos = position + Vector3.up * 1.0f;
             Vector3 targetPos = col.bounds.center; // Doğrudan oyuncunun merkezini hedef al
             Vector3 dir = targetPos - startPos;
             float distance = dir.magnitude;

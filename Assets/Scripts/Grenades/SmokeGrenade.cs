@@ -23,8 +23,8 @@ public class SmokeGrenade : GrenadeBase
             GameObject smokeObj = Instantiate(smokeVolumePrefab, position, Quaternion.identity);
             smokeObj.transform.localScale = Vector3.one * 0.01f;
 
-            // DOTween ile hızlıca 20 katına büyüt
-            smokeObj.transform.DOScale(20f, expandDuration).SetEase(Ease.OutCubic);
+            // DOTween ile hızlıca 10 katına büyüt
+            smokeObj.transform.DOScale(10f, expandDuration).SetEase(Ease.OutCubic);
 
             // Süre bitince yavaşça küçült ve dünyadan sil
             smokeObj.transform.DOScale(0.01f, expandDuration).SetDelay(smokeDuration).SetEase(Ease.InCubic)
