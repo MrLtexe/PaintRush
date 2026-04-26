@@ -125,7 +125,9 @@ public class GameUIManager : MonoBehaviour
     private static void SetCooldownText(TMP_Text label, float remaining)
     {
         if (label == null) return;
-        label.text = remaining > 0f ? Mathf.CeilToInt(remaining).ToString() : "HAZIR";
+        bool onCooldown = remaining > 0f;
+        label.gameObject.SetActive(onCooldown);
+        if (onCooldown) label.text = Mathf.CeilToInt(remaining).ToString();
     }
 
     public void ShowFlash(float duration)
