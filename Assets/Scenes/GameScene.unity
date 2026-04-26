@@ -1926,8 +1926,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  renkliTeamPrefab: {fileID: 4483182357974669481, guid: 0312f92dd45884c44932bc7d2c018a16, type: 3}
-  renksizTeamPrefab: {fileID: 7673181988749088563, guid: 964d22adb9b31134eaf2ed7ffbfb9791, type: 3}
+  renkliTeamPrefab: {fileID: 6424883374587680822, guid: ce50278a666ec8446a6d07d7856d48b9, type: 3}
+  renksizTeamPrefab: {fileID: 3884106996242727019, guid: 450edeee66e0d5447b9bf0ba8ab2d000, type: 3}
   renkliTeamSpawnParent: {fileID: 1981742211}
   renksizTeamSpawnParent: {fileID: 2045143134}
 --- !u!4 &895820586

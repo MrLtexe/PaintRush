@@ -62,11 +62,6 @@ public class FPSController : NetworkBehaviour
     private bool _isGrounded;
     private float _xRotation = 0f;
 
-    [Header("Animasyon")]
-    [SerializeField] private Animator _animator;
-    private static readonly int AnimVelX = Animator.StringToHash("VelocityX");
-    private static readonly int AnimVelZ = Animator.StringToHash("VelocityZ");
-
     [Header("Ağ Senkronizasyonu")]
     public NetworkVariable<float> networkViewPitch = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<int> networkWeaponIndex = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
@@ -94,10 +89,6 @@ public class FPSController : NetworkBehaviour
         {
             Camera cam = GetComponentInChildren<Camera>();
             if (cam != null) playerCamera = cam.transform;
-        }
-        if (_animator == null)
-        {
-            _animator = GetComponentInChildren<Animator>();
         }
         
         networkWeaponIndex.OnValueChanged += OnWeaponChanged;
@@ -161,20 +152,16 @@ public class FPSController : NetworkBehaviour
     {
         if (current)
         {
-            // 1. Ölüm animasyonunu başlat
-            if (_animator) _animator.SetBool("IsDead", true);
-
-            // 2. Mermilerin cesede çarpıp görünmez duvara takılmaması için tüm çarpıştırıcıları kapat
+            // 1. Mermilerin cesede çarpıp görünmez duvara takılmaması için tüm çarpıştırıcıları kapat
             if (_controller != null) _controller.enabled = false;
             foreach (var col in GetComponents<Collider>()) col.enabled = false;
 
-            // 3. Karakterin elindeki silahı gizle
+            // 2. Karakterin elindeki silahı gizle
             ApplyWeaponVisuals(-1);
         }
         else
         {
             // YENİDEN DOĞMA (Dirilme) İşlemleri
-            if (_animator) _animator.SetBool("IsDead", false);
             
             ApplyWeaponVisuals(networkWeaponIndex.Value); // Silahı geri getir
 
@@ -306,16 +293,6 @@ public class FPSController : NetworkBehaviour
         bool isSprinting = sprintInput.action.IsPressed();
         float currentSpeed = isSprinting ? sprintSpeed : walkSpeed;
         _controller.Move(move * currentSpeed * Time.deltaTime);
-
-        float scale = moveValue.magnitude > 0.1f ? (isSprinting ? 1f : 0.5f) : 0f;
-        float velX = moveValue.x * scale;
-        float velZ = moveValue.y * scale;
-
-        if (_animator)
-        {
-            _animator.SetFloat(AnimVelX, velX);
-            _animator.SetFloat(AnimVelZ, velZ);
-        }
     }
 
     private void HandleJump()
