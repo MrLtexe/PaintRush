@@ -10082,6 +10082,37 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!1 &3454932136053734596
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7868044104970830973}
+  m_Layer: 6
+  m_Name: granada
+  m_TagString: Untagged
+  m_Icon: {fileID: -5442936267250999957, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7868044104970830973
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3454932136053734596}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.347, y: 0.276, z: 0.395}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8661937340319707519}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6424883374587680822
 GameObject:
   m_ObjectHideFlags: 0
@@ -10122,6 +10153,7 @@ Transform:
   - {fileID: 8252852548836158420}
   - {fileID: 2887977367573078237}
   - {fileID: 3897863732548639515}
+  - {fileID: 7868044104970830973}
   - {fileID: 6571628202750180540}
   - {fileID: 1591986462624807429}
   m_Father: {fileID: 0}
@@ -10269,10 +10301,10 @@ MonoBehaviour:
   shootLayer:
     serializedVersion: 2
     m_Bits: 4294967233
-  grenadePrefab: {fileID: 0}
-  smokePrefab: {fileID: 0}
-  flashPrefab: {fileID: 0}
-  grenadeThrowOrigin: {fileID: 0}
+  grenadePrefab: {fileID: 7047575596389330430, guid: 1405b9d2e786cb54e98ddeada2da5500, type: 3}
+  smokePrefab: {fileID: 6113502158936759415, guid: 64fd2787a6c3ad24e85abfd577773f17, type: 3}
+  flashPrefab: {fileID: 7571781123290809695, guid: 54d223c61be3786478c365715b01c96f, type: 3}
+  grenadeThrowOrigin: {fileID: 7868044104970830973}
   grenadeCount: 2
   smokeCount: 1
   flashCount: 1

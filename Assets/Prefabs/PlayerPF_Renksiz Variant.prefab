@@ -64,6 +64,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8687441430149767406, guid: ce50278a666ec8446a6d07d7856d48b9, type: 3}
+      propertyPath: grenadeThrowOrigin
+      value: 
+      objectReference: {fileID: 143609091490602016}
     - target: {fileID: 9048257441311535786, guid: ce50278a666ec8446a6d07d7856d48b9, type: 3}
       propertyPath: GlobalObjectIdHash
       value: 3707527412
@@ -77,3 +81,8 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ce50278a666ec8446a6d07d7856d48b9, type: 3}
+--- !u!4 &143609091490602016 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7868044104970830973, guid: ce50278a666ec8446a6d07d7856d48b9, type: 3}
+  m_PrefabInstance: {fileID: 7840445724024428637}
+  m_PrefabAsset: {fileID: 0}
