@@ -15,6 +15,7 @@ public class Rifle : WeaponBase
         // Mermi sistemi
         maxAmmoPerMag = 30;
         currentAmmo = 30;
+        maxReserveAmmo = 60;
         reserveAmmo = 60; // 2 Yedek Şarjör
         reloadTime = 3f;
     }

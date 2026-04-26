@@ -15,6 +15,7 @@ public class Pistol : WeaponBase
         // Mermi sistemi
         maxAmmoPerMag = 12;
         currentAmmo = 12;
+        maxReserveAmmo = 24;
         reserveAmmo = 24; // 2 Yedek Şarjör
         reloadTime = 1.5f;
     }
