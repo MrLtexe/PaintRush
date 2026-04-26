@@ -228,7 +228,7 @@ MonoBehaviour:
   fuseTime: 2
   throwForce: 15
   explosionRadius: 7
-  maxDamage: 100
+  maxDamage: 150
   playerLayer:
     serializedVersion: 2
     m_Bits: 65
