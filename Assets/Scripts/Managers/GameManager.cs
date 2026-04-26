@@ -28,7 +28,7 @@ public class GameManager : NetworkBehaviour
     public float delayDuration = 4f; // Delay aşaması süresi
     public float transitionDuration = 3f;
     public float defuseDuration = 40f;
-    public float roundEndDuration = 5f;
+    public float roundEndDuration = 8f; // Patlama görselini izlemek için süreyi uzattık
     public float respawnCooldown = 5f;
 
     [Header("Görev Ayarları")]
@@ -44,6 +44,11 @@ public class GameManager : NetworkBehaviour
     [Header("Ses Ayarları")]
     public AudioSource announcementAudioSource;
     public AudioClip transitionAnnouncement;
+
+    [Header("Harita Patlama Efektleri")]
+    public Renderer mapRenderer; // Haritanın ana mesh rendereri
+    public Material[] explodedMapMaterials; // Patlama anında sırayla geçilecek 4 materyal
+    private Material[] _originalMapMaterials; // Raund başı sıfırlamak için orijinal materyaller
 
     private void Awake()
     {
@@ -116,6 +121,7 @@ public class GameManager : NetworkBehaviour
                 
             case GameState.DefusePhase:
                 // 40 sn bitti ve Renksiz takım bombayı imha edemedi -> Bomba patlar, Renkli takım kazandı
+                TriggerMapExplosionRpc();
                 EndRound(1);
                 break;
                 
@@ -148,6 +154,12 @@ public class GameManager : NetworkBehaviour
                 var (pos, rot) = PlayerSpawnManager.Instance.GetRandomSpawnPoint(player.GetTeam());
                 player.Respawn(pos, rot); 
             }
+        }
+
+        // Harita materyallerini orijinal (patlamamış) haline geri döndür
+        if (mapRenderer != null && _originalMapMaterials != null && _originalMapMaterials.Length > 0)
+        {
+            mapRenderer.sharedMaterials = _originalMapMaterials;
         }
 
         // Haritadaki tüm mermi ve patlama izlerini (Decal) anında temizle
@@ -203,6 +215,34 @@ public class GameManager : NetworkBehaviour
         if (announcementAudioSource != null && transitionAnnouncement != null)
         {
             announcementAudioSource.PlayOneShot(transitionAnnouncement);
+        }
+    }
+
+    [Rpc(SendTo.Everyone)]
+    private void TriggerMapExplosionRpc()
+    {
+        StartCoroutine(MapMaterialSwapRoutine());
+    }
+
+    private IEnumerator MapMaterialSwapRoutine()
+    {
+        if (mapRenderer == null || explodedMapMaterials == null || explodedMapMaterials.Length == 0) yield break;
+
+        // Orijinal materyalleri yedekle (ilk çalışmada)
+        if (_originalMapMaterials == null || _originalMapMaterials.Length == 0)
+            _originalMapMaterials = mapRenderer.sharedMaterials;
+
+        // Değişim yapacağımız materyal dizisini kopyala
+        Material[] currentMaterials = mapRenderer.sharedMaterials;
+
+        for (int i = 0; i < explodedMapMaterials.Length; i++)
+        {
+            if (i < currentMaterials.Length && explodedMapMaterials[i] != null)
+            {
+                currentMaterials[i] = explodedMapMaterials[i];
+                mapRenderer.sharedMaterials = currentMaterials; // Array'i Mesh'e geri ata
+            }
+            yield return new WaitForSeconds(1f); // Her materyal değişiminde yarım saniye bekle
         }
     }
 
