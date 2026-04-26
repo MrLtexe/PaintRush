@@ -41,6 +41,10 @@ public class MainMenuUI : MonoBehaviour
 
     private void Start()
     {
+        // İmleci görünür ve serbest yap (Oyundan lobiye dönüldüğünde kilitli kalmaması için)
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
         hostButton.onClick.AddListener(OnHostClicked);
         joinButton.onClick.AddListener(OnJoinClicked);
         disconnectButton.onClick.AddListener(OnDisconnectClicked);

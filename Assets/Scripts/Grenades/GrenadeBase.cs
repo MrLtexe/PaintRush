@@ -11,7 +11,7 @@ public abstract class GrenadeBase : NetworkBehaviour
 {
     [Header("Fırlatma Ayarları")]
     public float fuseTime = 3f;
-    public float throwForce = 15f;
+    public float throwForce = 20f;
 
     protected Rigidbody _rb;
     private float _fuseTimer;

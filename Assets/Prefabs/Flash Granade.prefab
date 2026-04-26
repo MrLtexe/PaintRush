@@ -226,7 +226,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   fuseTime: 1
-  throwForce: 15
+  throwForce: 20
   flashRadius: 12
   flashDuration: 5
   playerLayer:

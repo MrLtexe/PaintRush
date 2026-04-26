@@ -132,9 +132,12 @@ public class FPSController : NetworkBehaviour
 
         _controller = GetComponent<CharacterController>();
         
-        // Fareyi ekrana kilitle ve gizle
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        // Eğer ana menüdeysek (lobideysek) fareyi kilitleme
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "MainMenu")
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
 
         EnableInputs();
 
@@ -236,6 +239,10 @@ public class FPSController : NetworkBehaviour
             {
                 canAct = false; // Hazırlık, bekleme veya bitiş ekranındayız
             }
+        }
+        else if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "MainMenu")
+        {
+            canAct = false; // Lobideyken (Ana menüde) hareket etmeyi ve ateş etmeyi tamamen kilitle
         }
 
         if (_isInteracting)

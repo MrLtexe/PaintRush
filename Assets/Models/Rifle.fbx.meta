@@ -3,7 +3,22 @@ guid: d242ca5de444e574488f47cf9e0f967e
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: RifleMaterial1
+    second: {fileID: 2100000, guid: 3aec0a750c1cf154485c0276f5f978bd, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: RifleMaterial2
+    second: {fileID: 2100000, guid: 4d2f6ad7af9221f489ca62548fdf1970, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Rifle_Tube
+    second: {fileID: 2100000, guid: d06574853edbca246a684294734cde34, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

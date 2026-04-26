@@ -3,7 +3,47 @@ guid: 703b11126fa1a304cb1bfebf1a54d384
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PistolMaterial1
+    second: {fileID: 2100000, guid: 9bc9256b7a140564e99a670c27c29d9f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PistolMaterial2
+    second: {fileID: 2100000, guid: 22d516756dacd2944bb5256f035317ea, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PistolMaterial3
+    second: {fileID: 2100000, guid: 26ebc6c259e3c7047b03979100970d93, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PistolMaterial4
+    second: {fileID: 2100000, guid: 0baca012a8fdeb445825fa9b3dbd1dc2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PistolMaterial5
+    second: {fileID: 2100000, guid: 60bad710ac1e6834badc5256cff0db89, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PistolMaterial6
+    second: {fileID: 2100000, guid: 29bc957d10acc954b9bafb01fe4d8f44, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PistolMaterial7
+    second: {fileID: 2100000, guid: 6fafc3880d8d3ba42a8980399d27d47d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PistolTube
+    second: {fileID: 2100000, guid: fae73c00c30dd044cb89c49eccb76562, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
